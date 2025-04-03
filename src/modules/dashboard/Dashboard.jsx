@@ -5,7 +5,6 @@ import { supabase } from '@/supabaseClient';
 import AppList from '../apps/AppList';
 import AppForm from '../apps/AppForm';
 import Layout from '../../shared/components/Layout';
-import AdminTools from './AdminTools';
 import * as Sentry from '@sentry/browser';
 
 const Dashboard = () => {
@@ -74,9 +73,6 @@ const Dashboard = () => {
             {showAppForm ? 'Cancel' : '+ Add New App'}
           </button>
         </div>
-        
-        {/* Admin Tools - only shown to users who need it */}
-        <AdminTools />
         
         {showAppForm && (
           <div className="mb-8">
