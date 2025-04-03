@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 export default function PublicHeader() {
   return (
@@ -13,7 +14,13 @@ export default function PublicHeader() {
           <h1 className="text-xl font-bold text-gray-900">ZAPT Traction Tracker</h1>
         </div>
         
-        <div>
+        <div className="flex items-center space-x-4">
+          <Link 
+            to="/login" 
+            className="btn-primary cursor-pointer"
+          >
+            Login
+          </Link>
           <a 
             href="https://www.zapt.ai" 
             target="_blank" 

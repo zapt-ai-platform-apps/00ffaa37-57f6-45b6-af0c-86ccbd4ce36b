@@ -16,11 +16,16 @@ export default function TractionSummary({ apps = [] }) {
         acc.totalRevenue += Number(app.revenue) || 0;
         acc.completedActions += (app.actions || []).filter(a => a.completed).length;
         acc.pendingActions += (app.actions || []).filter(a => !a.completed).length;
+        acc.totalActions += (app.actions || []).length;
         return acc;
       },
-      { totalApps: safeApps.length, totalUsers: 0, totalRevenue: 0, completedActions: 0, pendingActions: 0 }
+      { totalApps: safeApps.length, totalUsers: 0, totalRevenue: 0, completedActions: 0, pendingActions: 0, totalActions: 0 }
     );
   }, [apps]);
+
+  const actionCompletionPercentage = stats.totalActions > 0 
+    ? Math.round((stats.completedActions / stats.totalActions) * 100) 
+    : 0;
 
   const chartData = {
     labels: ['Apps', 'Users', 'Revenue ($)', 'Completed Actions', 'Pending Actions'],
@@ -92,8 +97,17 @@ export default function TractionSummary({ apps = [] }) {
             <p className="text-2xl font-bold">${stats.totalRevenue}</p>
           </div>
           <div className="p-4 bg-amber-50 rounded-lg">
-            <p className="text-sm text-amber-600">Actions Completed</p>
-            <p className="text-2xl font-bold">{stats.completedActions}</p>
+            <p className="text-sm text-amber-600">Action Completion</p>
+            <p className="text-2xl font-bold">{actionCompletionPercentage}%</p>
+            <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+              <div 
+                className="bg-amber-600 h-2.5 rounded-full" 
+                style={{ width: `${actionCompletionPercentage}%` }}
+              ></div>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              {stats.completedActions} of {stats.totalActions} actions
+            </p>
           </div>
         </div>
       </div>

@@ -11,8 +11,8 @@ export default function PublicRoute({ element, restricted = false }) {
     return <LoadingPage />;
   }
   
-  // If route is restricted and user is logged in, redirect to dashboard
-  if (restricted && user) {
+  // If user is logged in and it's either the root path or a restricted route, redirect to dashboard
+  if (user && (location.pathname === '/' || restricted)) {
     const destinationPath = location.state?.from?.pathname || '/dashboard';
     return <Navigate to={destinationPath} replace />;
   }
