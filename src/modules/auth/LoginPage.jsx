@@ -40,9 +40,6 @@ export default function LoginPage() {
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
             <strong className="font-bold">Access Denied: </strong>
             <span className="block sm:inline">{authError}</span>
-            {isSigningOut && (
-              <p className="text-sm mt-2">Please wait while we process your sign out...</p>
-            )}
           </div>
         )}
         
