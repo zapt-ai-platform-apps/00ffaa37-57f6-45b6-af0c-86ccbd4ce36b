@@ -20,6 +20,7 @@ export default async function handler(req, res) {
       
       try {
         // Get all public apps for this user
+        // Removed 'strategy' field since it was dropped from the database in migration 0007
         const userApps = await db.select({
           id: apps.id,
           name: apps.name,
@@ -27,8 +28,7 @@ export default async function handler(req, res) {
           userCount: apps.userCount,
           revenue: apps.revenue,
           createdAt: apps.createdAt,
-          domain: apps.domain,
-          strategy: apps.strategy
+          domain: apps.domain
         }).from(apps)
           .where(eq(apps.userId, userId));
         
