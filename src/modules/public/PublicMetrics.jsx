@@ -8,14 +8,14 @@ import {
 
 export default function PublicMetrics({ apps = [], isLandingPage = false }) {
   const stats = useMemo(() => {
-    // Use hardcoded zeros for landing page
+    // Use hardcoded values for landing page
     if (isLandingPage) {
       return {
-        totalApps: 0,
-        totalUsers: 0,
-        totalRevenue: 0,
-        completedActions: 0,
-        totalActions: 0
+        totalApps: 324,
+        totalUsers: 15725,
+        totalRevenue: 127650.45,
+        completedActions: 1893,
+        totalActions: 2450
       };
     }
     

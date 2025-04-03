@@ -2,6 +2,7 @@ import { initializeZapt } from '@zapt/zapt-js';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import { apps } from '../drizzle/schema.js';
+import { eq } from 'drizzle-orm';
 import { authenticateUser } from './_apiUtils.js';
 
 export default async function handler(req, res) {
@@ -15,9 +16,7 @@ export default async function handler(req, res) {
     if (req.method === 'GET') {
       console.log('GET request to fetch user apps');
       
-      const userApps = await db.select().from(apps).where((app) => {
-        return app.userId.equals(user.id);
-      });
+      const userApps = await db.select().from(apps).where(eq(apps.userId, user.id));
       
       res.status(200).json(userApps);
     } else if (req.method === 'POST') {
