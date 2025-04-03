@@ -28,17 +28,6 @@ export default function AuthProvider({ children }) {
         const { data, error } = await supabase.auth.getSession();
         if (error) throw error;
         
-        // Only allow david@mapt.events to sign in
-        if (data.session?.user?.email && data.session.user.email !== 'david@mapt.events') {
-          console.log('Unauthorized user, signing out:', data.session.user.email);
-          // First set error and clear session, then sign out
-          setAuthError('Only david@mapt.events is allowed to access this app.');
-          updateSession(null);
-          await supabase.auth.signOut();
-          setLoading(false);
-          return;
-        }
-        
         // Set initial session
         updateSession(data.session);
         if (data.session) {
@@ -58,36 +47,21 @@ export default function AuthProvider({ children }) {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       console.log('Auth event:', event, 'Has session:', hasSessionRef.current);
       
-      // For SIGNED_IN, only update session if we don't have one and it's the allowed user
+      // For SIGNED_IN, only update session if we don't have one
       if (event === 'SIGNED_IN') {
         if (!hasSessionRef.current) {
-          if (newSession?.user?.email === 'david@mapt.events') {
-            updateSession(newSession);
-            if (newSession?.user?.email) {
-              eventBus.publish(events.USER_SIGNED_IN, { user: newSession.user });
-              setHasRecordedLogin(false);
-            }
-          } else {
-            console.log('Unauthorized user attempting to sign in:', newSession?.user?.email);
-            // First set error and clear session, then sign out
-            setAuthError('Only david@mapt.events is allowed to access this app.');
-            updateSession(null);
-            await supabase.auth.signOut();
+          updateSession(newSession);
+          if (newSession?.user?.email) {
+            eventBus.publish(events.USER_SIGNED_IN, { user: newSession.user });
+            setHasRecordedLogin(false);
           }
         } else {
           console.log('Already have session, ignoring SIGNED_IN event');
         }
       }
-      // For TOKEN_REFRESHED, always update the session if it's the allowed user
+      // For TOKEN_REFRESHED, always update the session
       else if (event === 'TOKEN_REFRESHED') {
-        if (newSession?.user?.email === 'david@mapt.events') {
-          updateSession(newSession);
-        } else if (newSession?.user) {
-          console.log('Unauthorized user session refresh:', newSession.user.email);
-          setAuthError('Only david@mapt.events is allowed to access this app.');
-          updateSession(null);
-          await supabase.auth.signOut();
-        }
+        updateSession(newSession);
       }
       // For SIGNED_OUT, clear the session
       else if (event === 'SIGNED_OUT') {
@@ -103,7 +77,7 @@ export default function AuthProvider({ children }) {
   }, []); 
   
   useEffect(() => {
-    if (session?.user?.email && session.user.email === 'david@mapt.events' && !hasRecordedLogin) {
+    if (session?.user?.email && !hasRecordedLogin) {
       console.log('Recording login for:', session.user.email);
       recordLogin(session.user.email, import.meta.env.VITE_PUBLIC_APP_ENV);
       setHasRecordedLogin(true);

@@ -1,38 +1,47 @@
 import React, { useState } from 'react';
-
-// Sample strategies for demonstration - in a real app, this would come from an LLM API
-const sampleStrategies = [
-  "Focus on content marketing by publishing weekly tutorials related to your app's functionality",
-  "Create a referral program offering discounts to users who bring in new customers",
-  "Launch a targeted social media campaign on platforms where your ideal users spend time",
-  "Partner with complementary apps or services to cross-promote to each other's audiences",
-  "Start a 30-day challenge related to your app's purpose to build community and engagement",
-  "Create and distribute free valuable resources that showcase your app's capabilities",
-  "Optimize your app store listing with better keywords, screenshots and descriptions",
-  "Run limited-time promotions or special offers to create urgency",
-  "Identify and reach out to influencers in your niche for reviews or partnerships",
-  "Implement customer feedback loops to improve features users actually want"
-];
+import * as Sentry from '@sentry/browser';
+import { supabase } from '@/supabaseClient';
 
 export default function StrategyGenerator({ app, onSetStrategy, onCancel, isLoading }) {
   const [generatedStrategy, setGeneratedStrategy] = useState('');
   const [isThinking, setIsThinking] = useState(false);
+  const [error, setError] = useState(null);
 
   const generateStrategy = async () => {
     try {
       setIsThinking(true);
+      setError(null);
       
-      // In a real app, this would be an API call to an LLM service
-      // Simulating API delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Get auth token
+      const { data: { session } } = await supabase.auth.getSession();
       
-      // Select a random strategy for demonstration
-      const randomIndex = Math.floor(Math.random() * sampleStrategies.length);
-      const strategy = sampleStrategies[randomIndex];
+      const response = await fetch('/api/generate-strategy', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          appName: app.name,
+          appDescription: app.description,
+          userCount: app.userCount,
+          revenue: app.revenue,
+          actions: app.actions
+        }),
+      });
       
-      setGeneratedStrategy(strategy);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate strategy');
+      }
+      
+      const data = await response.json();
+      setGeneratedStrategy(data.strategy);
+      
     } catch (error) {
       console.error('Error generating strategy:', error);
+      Sentry.captureException(error);
+      setError('Failed to generate strategy. Please try again.');
     } finally {
       setIsThinking(false);
     }
@@ -40,14 +49,20 @@ export default function StrategyGenerator({ app, onSetStrategy, onCancel, isLoad
 
   return (
     <div>
+      {error && (
+        <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4">
+          {error}
+        </div>
+      )}
+      
       {!generatedStrategy && !isThinking ? (
         <div className="text-center py-8">
           <p className="text-gray-600 mb-6">
-            Generate a focused traction strategy for your app using our AI assistant.
+            Generate a focused traction strategy for your app using our AI assistant powered by Claude.
           </p>
           <button
             onClick={generateStrategy}
-            className="btn-primary"
+            className="btn-primary cursor-pointer"
             disabled={isLoading}
           >
             Generate Strategy
@@ -56,25 +71,25 @@ export default function StrategyGenerator({ app, onSetStrategy, onCancel, isLoad
       ) : isThinking ? (
         <div className="text-center py-8">
           <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-600">Generating your strategy...</p>
+          <p className="text-gray-600">Generating your strategy with Claude AI...</p>
         </div>
       ) : (
         <div className="py-4">
           <div className="bg-indigo-50 border border-indigo-100 p-4 rounded-md mb-6">
-            <p className="text-gray-800">{generatedStrategy}</p>
+            <p className="text-gray-800 whitespace-pre-line">{generatedStrategy}</p>
           </div>
           
           <div className="flex justify-end space-x-3">
             <button
               onClick={onCancel}
-              className="btn-secondary"
+              className="btn-secondary cursor-pointer"
               disabled={isLoading}
             >
               Cancel
             </button>
             <button
               onClick={() => onSetStrategy(generatedStrategy)}
-              className="btn-primary flex items-center"
+              className="btn-primary flex items-center cursor-pointer"
               disabled={isLoading}
             >
               {isLoading ? (

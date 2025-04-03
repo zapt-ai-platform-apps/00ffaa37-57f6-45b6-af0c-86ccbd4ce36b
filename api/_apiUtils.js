@@ -35,11 +35,6 @@ export async function authenticateUser(req, requireAuth = true) {
     throw new Error('Invalid token');
   }
 
-  // Only allow david@mapt.events to use the admin features
-  if (user.email !== 'david@mapt.events') {
-    throw new Error('Unauthorized user');
-  }
-
   return user;
 }
 
