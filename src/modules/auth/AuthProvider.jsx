@@ -7,10 +7,15 @@ import { useNavigate } from 'react-router-dom';
 
 export const AuthContext = createContext(null);
 
+// Authorized emails list - remove zapt.ai@gmail.com from here
 const AUTHORIZED_EMAILS = [
-  'zapt.ai@gmail.com',
   'david@mapt.events',
   // Add other authorized emails here
+];
+
+// Explicitly blocked emails
+const BLOCKED_EMAILS = [
+  'zapt.ai@gmail.com',
 ];
 
 export default function AuthProvider({ children }) {
@@ -18,6 +23,7 @@ export default function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [hasRecordedLogin, setHasRecordedLogin] = useState(false);
   const [authError, setAuthError] = useState(null);
+  const [isSigningOut, setIsSigningOut] = useState(false);
   const hasSessionRef = useRef(false);
   const navigate = useNavigate();
   
@@ -30,26 +36,47 @@ export default function AuthProvider({ children }) {
   // Function to check if user has permission
   const checkUserPermission = (user) => {
     if (!user || !user.email) return false;
-    return AUTHORIZED_EMAILS.includes(user.email);
+    
+    const email = user.email.toLowerCase();
+    
+    // First check if email is explicitly blocked
+    if (BLOCKED_EMAILS.includes(email)) {
+      return false;
+    }
+    
+    // Then check if email is in the authorized list
+    return AUTHORIZED_EMAILS.includes(email);
   };
   
   // Handle unauthorized user
   const handleUnauthorizedUser = async (user) => {
     console.log('Unauthorized access attempt:', user.email);
-    setAuthError('You do not have permission to access this application.');
+    
+    // Set auth error message
+    let errorMessage = 'You do not have permission to access this application.';
+    if (BLOCKED_EMAILS.includes(user.email.toLowerCase())) {
+      errorMessage = 'This email address has been blocked from accessing this application.';
+    }
+    
+    setAuthError(errorMessage);
+    setIsSigningOut(true);
     
     // Redirect to login page to show the error
     navigate('/login');
     
-    // Sign out after a short delay to ensure error message is seen
+    // Sign out after a longer delay to ensure error message is seen
     setTimeout(async () => {
       try {
         await supabase.auth.signOut();
+        // Don't clear the auth error immediately after sign out
+        // We'll keep it visible on the login page
       } catch (error) {
         console.error('Error signing out unauthorized user:', error);
         Sentry.captureException(error);
+      } finally {
+        setIsSigningOut(false);
       }
-    }, 500);
+    }, 10000); // Increased to 10 seconds to ensure users see the message
   };
   
   useEffect(() => {
@@ -109,19 +136,23 @@ export default function AuthProvider({ children }) {
       else if (event === 'TOKEN_REFRESHED') {
         updateSession(newSession);
       }
-      // For SIGNED_OUT, clear the session
+      // For SIGNED_OUT, clear the session but maintain the error if we're in the signing out process
       else if (event === 'SIGNED_OUT') {
         updateSession(null);
         eventBus.publish(events.USER_SIGNED_OUT, {});
         setHasRecordedLogin(false);
-        setAuthError(null); // Clear any auth errors on signout
+        
+        // Only clear auth error if we're not in the process of signing out an unauthorized user
+        if (!isSigningOut) {
+          setAuthError(null);
+        }
       }
     });
     
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, [navigate]); 
+  }, [navigate, isSigningOut]); 
   
   useEffect(() => {
     if (session?.user?.email && !hasRecordedLogin) {
@@ -133,6 +164,7 @@ export default function AuthProvider({ children }) {
   
   const signOut = async () => {
     try {
+      setAuthError(null); // Clear any auth errors when user explicitly signs out
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
     } catch (error) {
@@ -148,7 +180,8 @@ export default function AuthProvider({ children }) {
       user: session?.user || null, 
       loading, 
       signOut,
-      authError 
+      authError,
+      isSigningOut
     }}>
       {children}
     </AuthContext.Provider>

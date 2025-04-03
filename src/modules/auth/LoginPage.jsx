@@ -1,11 +1,18 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/supabaseClient';
 import useAuth from './hooks/useAuth';
 
 export default function LoginPage() {
-  const { authError } = useAuth();
+  const { authError, isSigningOut } = useAuth();
+  
+  useEffect(() => {
+    // Log the auth error status to help with debugging
+    if (authError) {
+      console.log('Auth error displayed:', authError);
+    }
+  }, [authError]);
   
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
@@ -31,7 +38,11 @@ export default function LoginPage() {
         
         {authError && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <strong className="font-bold">Access Denied: </strong>
             <span className="block sm:inline">{authError}</span>
+            {isSigningOut && (
+              <p className="text-sm mt-2">Please wait while we process your sign out...</p>
+            )}
           </div>
         )}
         
