@@ -28,7 +28,20 @@ export default function AppDetail() {
     try {
       setLoading(true);
       const appData = await getApp(id);
-      setApp(appData);
+      
+      if (!appData) {
+        throw new Error('App not found');
+      }
+      
+      // Ensure the app has the expected fields with defaults
+      const normalizedApp = {
+        ...appData,
+        userCount: typeof appData.userCount === 'number' ? appData.userCount : 0,
+        revenue: typeof appData.revenue === 'number' ? appData.revenue : 0,
+        actions: Array.isArray(appData.actions) ? appData.actions : []
+      };
+      
+      setApp(normalizedApp);
       setError(null);
     } catch (err) {
       console.error('Error fetching app data:', err);
@@ -40,6 +53,8 @@ export default function AppDetail() {
   };
 
   const handleUpdateApp = async (updatedData) => {
+    if (!app) return;
+    
     try {
       setUpdating(true);
       // Merge with existing app data to avoid losing fields not in the form
@@ -60,6 +75,8 @@ export default function AppDetail() {
   };
 
   const handleUpdateMetrics = async (metrics) => {
+    if (!app) return;
+    
     try {
       setUpdating(true);
       const updatedApp = await updateApp(id, {
@@ -79,6 +96,8 @@ export default function AppDetail() {
   };
 
   const handleUpdateStrategy = async (strategy) => {
+    if (!app) return;
+    
     try {
       setUpdating(true);
       const updatedApp = await updateApp(id, {
@@ -97,6 +116,8 @@ export default function AppDetail() {
   };
 
   const handleUpdateActions = async (actions) => {
+    if (!app) return;
+    
     try {
       setUpdating(true);
       const updatedApp = await updateApp(id, {
@@ -132,6 +153,8 @@ export default function AppDetail() {
   };
 
   const toggleAppPublic = async () => {
+    if (!app) return;
+    
     try {
       setUpdating(true);
       const updatedApp = await updateApp(id, {
@@ -150,12 +173,15 @@ export default function AppDetail() {
   };
 
   const getPublicShareUrl = () => {
+    if (!user || !user.id) return '';
     // Create a URL for the user's public dashboard
     return `${window.location.origin}/public/${user.id}`;
   };
 
   const copyShareUrl = () => {
     const url = getPublicShareUrl();
+    if (!url) return;
+    
     navigator.clipboard.writeText(url)
       .then(() => {
         setShareUrlCopied(true);
@@ -311,7 +337,7 @@ export default function AppDetail() {
                   type="text"
                   value={getPublicShareUrl()}
                   readOnly
-                  className="input border-gray-300 flex-grow"
+                  className="input box-border border-gray-300 flex-grow"
                 />
                 <button
                   onClick={copyShareUrl}

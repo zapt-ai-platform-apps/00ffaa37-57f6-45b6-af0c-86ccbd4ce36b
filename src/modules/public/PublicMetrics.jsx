@@ -24,10 +24,24 @@ export default function PublicMetrics({ apps = [], isLandingPage = false }) {
     
     return safeApps.reduce(
       (acc, app) => {
-        acc.totalUsers += app.userCount || 0;
-        acc.totalRevenue += Number(app.revenue) || 0;
-        acc.completedActions += (app.actions || []).filter(a => a.completed).length;
-        acc.totalActions += (app.actions || []).length;
+        // Add defensive checks for app and its properties
+        if (!app) return acc;
+        
+        // Safely access properties with fallbacks to 0
+        const userCount = typeof app.userCount === 'number' ? app.userCount : 0;
+        const revenue = typeof app.revenue === 'number' ? app.revenue : 
+                       (typeof app.revenue === 'string' ? parseFloat(app.revenue) || 0 : 0);
+        
+        // Safely handle actions array
+        const actions = Array.isArray(app.actions) ? app.actions : [];
+        const completedActions = actions.filter(a => a && a.completed).length;
+        
+        // Update accumulator
+        acc.totalUsers += userCount;
+        acc.totalRevenue += revenue;
+        acc.completedActions += completedActions;
+        acc.totalActions += actions.length;
+        
         return acc;
       },
       { totalApps: safeApps.length, totalUsers: 0, totalRevenue: 0, completedActions: 0, totalActions: 0 }
