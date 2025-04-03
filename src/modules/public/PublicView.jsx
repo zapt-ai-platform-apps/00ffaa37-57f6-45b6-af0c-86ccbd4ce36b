@@ -3,6 +3,10 @@ import { getPublicApps } from '@/modules/apps/api';
 import PublicHeader from './PublicHeader';
 import PublicAppsList from './PublicAppsList';
 import PublicMetrics from './PublicMetrics';
+import Hero from './Hero';
+import FeatureSection from './FeatureSection';
+import TestimonialSection from './TestimonialSection';
+import FooterSection from './FooterSection';
 import LoadingPage from '@/shared/components/LoadingPage';
 import * as Sentry from '@sentry/browser';
 
@@ -55,24 +59,32 @@ const PublicView = () => {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
       <PublicHeader />
+      <Hero />
       
       {error ? (
-        <div className="rounded-md bg-red-50 p-4 my-6">
-          <div className="flex">
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">Error</h3>
-              <div className="text-sm text-red-700">{error}</div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="rounded-md bg-red-50 p-4 my-6">
+            <div className="flex">
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-red-800">Error</h3>
+                <div className="text-sm text-red-700">{error}</div>
+              </div>
             </div>
           </div>
         </div>
       ) : (
         <>
-          <PublicMetrics apps={apps} />
-          <PublicAppsList apps={apps} />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <PublicMetrics apps={apps} />
+            <FeatureSection />
+            <PublicAppsList apps={apps} />
+            <TestimonialSection />
+          </div>
         </>
       )}
+      <FooterSection />
     </div>
   );
 };

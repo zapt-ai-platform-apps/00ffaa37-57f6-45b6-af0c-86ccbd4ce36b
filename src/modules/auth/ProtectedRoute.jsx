@@ -11,9 +11,9 @@ export default function ProtectedRoute({ element }) {
     return <LoadingPage />;
   }
   
-  // If there's an auth error or no user, redirect to login
+  // If there's an auth error or no user, redirect to landing page instead of login
   if (authError || !user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   return element;

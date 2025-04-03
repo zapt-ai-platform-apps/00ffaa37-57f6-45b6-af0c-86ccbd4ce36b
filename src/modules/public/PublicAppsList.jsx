@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
-import { getPublicAppById } from '../apps/api';
 import * as Sentry from '@sentry/browser';
+import { IoArrowDown, IoArrowUp, IoGlobeOutline, IoCheckmarkCircle } from 'react-icons/io5';
 
 const PublicAppsList = ({ apps }) => {
   const [expandedApp, setExpandedApp] = useState(null);
@@ -58,97 +58,125 @@ const PublicAppsList = ({ apps }) => {
   }
 
   return (
-    <div className="mt-8">
-      <h2 className="text-xl font-semibold mb-4">Apps</h2>
-      <div className="bg-white shadow overflow-hidden sm:rounded-md">
-        <ul className="divide-y divide-gray-200">
-          {apps.map((app) => (
-            <li key={app.id}>
-              <div 
-                className="px-4 py-5 hover:bg-gray-50 transition-colors cursor-pointer"
-                onClick={() => handleAppClick(app.id)}
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-lg font-medium text-indigo-600">{app.name}</h3>
-                    <p className="mt-1 text-sm text-gray-500">{app.description}</p>
-                    <p className="mt-1 text-xs text-gray-400">
-                      Created {formatDistanceToNow(new Date(app.createdAt), { addSuffix: true })}
-                    </p>
-                  </div>
-                  <div className="flex gap-4 items-center">
+    <div className="py-16">
+      <div className="text-center mb-12">
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Featured Apps</h2>
+        <p className="mt-3 text-xl text-gray-600">Discover and explore apps built with ZAPT</p>
+      </div>
+      
+      <div className="space-y-6">
+        {apps.map((app) => (
+          <div 
+            key={app.id}
+            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300"
+          >
+            <div 
+              className="p-6 cursor-pointer"
+              onClick={() => handleAppClick(app.id)}
+            >
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-center">
+                    <h3 className="text-xl font-semibold text-indigo-600">{app.name}</h3>
                     {app.domain && (
-                      <button
-                        onClick={(e) => visitApp(e, app.domain)}
-                        className="text-sm text-white bg-indigo-600 hover:bg-indigo-700 py-1 px-3 rounded cursor-pointer transition-colors"
+                      <a
+                        href={formatDomain(app.domain)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="ml-2 text-gray-400 hover:text-gray-600"
+                        title={app.domain}
                       >
-                        Visit App
-                      </button>
+                        <IoGlobeOutline className="h-5 w-5" />
+                      </a>
                     )}
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">{app.userCount || 0}</p>
-                      <p className="text-xs text-gray-500">Users</p>
+                  </div>
+                  <p className="mt-2 text-gray-600">{app.description}</p>
+                  <p className="mt-1 text-xs text-gray-400">
+                    Created {formatDistanceToNow(new Date(app.createdAt), { addSuffix: true })}
+                  </p>
+                </div>
+                
+                <div className="flex flex-wrap md:flex-nowrap gap-4 items-center">
+                  {app.domain && (
+                    <button
+                      onClick={(e) => visitApp(e, app.domain)}
+                      className="btn-primary cursor-pointer flex-shrink-0"
+                    >
+                      Visit App
+                    </button>
+                  )}
+                  
+                  <div className="flex gap-6">
+                    <div className="text-center px-4 py-2 bg-indigo-50 rounded-lg">
+                      <p className="text-lg font-semibold text-indigo-700">{app.userCount || 0}</p>
+                      <p className="text-xs text-gray-500 uppercase">Users</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-medium text-gray-900">${Number(app.revenue || 0).toFixed(2)}</p>
-                      <p className="text-xs text-gray-500">Revenue</p>
+                    
+                    <div className="text-center px-4 py-2 bg-purple-50 rounded-lg">
+                      <p className="text-lg font-semibold text-purple-700">${Number(app.revenue || 0).toFixed(2)}</p>
+                      <p className="text-xs text-gray-500 uppercase">Revenue</p>
+                    </div>
+                  </div>
+                  
+                  <button 
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                    aria-label={expandedApp === app.id ? "Collapse details" : "Expand details"}
+                  >
+                    {expandedApp === app.id ? (
+                      <IoArrowUp className="h-5 w-5" />
+                    ) : (
+                      <IoArrowDown className="h-5 w-5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {loading && expandedApp === app.id && (
+                <div className="mt-6 py-2">
+                  <div className="animate-pulse flex space-x-4">
+                    <div className="flex-1 space-y-4 py-1">
+                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                      <div className="space-y-2">
+                        <div className="h-4 bg-gray-200 rounded"></div>
+                        <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                      </div>
                     </div>
                   </div>
                 </div>
+              )}
 
-                {loading && expandedApp === app.id && (
-                  <div className="mt-4 py-2">
-                    <div className="animate-pulse flex space-x-4">
-                      <div className="flex-1 space-y-4 py-1">
-                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                        <div className="space-y-2">
-                          <div className="h-4 bg-gray-200 rounded"></div>
-                          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
+              {detailError && expandedApp === app.id && (
+                <div className="mt-6 p-4 rounded-lg bg-red-50 text-red-600">
+                  {detailError}
+                </div>
+              )}
 
-                {detailError && expandedApp === app.id && (
-                  <div className="mt-4 text-sm text-red-600">
-                    {detailError}
-                  </div>
-                )}
-
-                {expandedApp === app.id && !loading && !detailError && (
-                  <div className="mt-4 border-t pt-4">
-                    {app.domain && (
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">App Domain</h4>
-                        <a 
-                          href={formatDomain(app.domain)} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          {app.domain}
-                        </a>
-                      </div>
-                    )}
-                    
+              {expandedApp === app.id && !loading && !detailError && (
+                <div className="mt-6 pt-4 border-t border-gray-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {app.strategy && (
-                      <div className="mb-4">
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Strategy</h4>
-                        <p className="text-sm text-gray-600 whitespace-pre-line">{app.strategy}</p>
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="font-medium text-gray-900 mb-3">Growth Strategy</h4>
+                        <p className="text-gray-700 whitespace-pre-line">{app.strategy}</p>
                       </div>
                     )}
                     
                     {app.actions && app.actions.length > 0 && (
-                      <div>
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Action Items</h4>
-                        <ul className="list-disc pl-5 text-sm text-gray-600">
+                      <div className="bg-gray-50 p-4 rounded-lg">
+                        <h4 className="font-medium text-gray-900 mb-3">Action Items</h4>
+                        <ul className="space-y-2">
                           {Array.isArray(app.actions) 
                             ? app.actions.map((action, index) => (
-                                <li key={action.id || index} className="mb-1">
-                                  {action.text}
-                                  {action.completed && <span className="ml-2 text-green-600">✓</span>}
+                                <li key={action.id || index} className="flex items-center">
+                                  {action.completed ? (
+                                    <IoCheckmarkCircle className="h-5 w-5 text-green-500 flex-shrink-0 mr-2" />
+                                  ) : (
+                                    <div className="h-5 w-5 border-2 border-gray-300 rounded-full flex-shrink-0 mr-2"></div>
+                                  )}
+                                  <span className={`${action.completed ? 'text-gray-500' : 'text-gray-700'}`}>
+                                    {action.text}
+                                  </span>
                                 </li>
                               ))
                             : <li>No actions available</li>
@@ -157,11 +185,11 @@ const PublicAppsList = ({ apps }) => {
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
