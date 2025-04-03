@@ -17,10 +17,10 @@ const PublicAppsList = ({ apps }) => {
     try {
       setLoading(true);
       setDetailError(null);
-      const appDetails = await getPublicAppById(appId);
+      // We don't need to fetch additional details since actions are now included in the initial apps data
       setExpandedApp(appId);
     } catch (error) {
-      console.error('Error fetching app details:', error);
+      console.error('Error handling app click:', error);
       setDetailError('Unable to load app details');
       Sentry.captureException(error);
     } finally {

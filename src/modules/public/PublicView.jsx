@@ -17,7 +17,24 @@ const PublicView = () => {
         setLoading(true);
         const data = await getPublicApps();
         console.log('Fetched public apps:', data);
-        setApps(data || []);
+        
+        // Ensure actions is properly parsed for each app
+        const processedApps = data.map(app => {
+          // Ensure actions is an array
+          if (!app.actions) {
+            app.actions = [];
+          } else if (typeof app.actions === 'string') {
+            try {
+              app.actions = JSON.parse(app.actions);
+            } catch (e) {
+              console.error('Error parsing actions for app:', app.id, e);
+              app.actions = [];
+            }
+          }
+          return app;
+        });
+        
+        setApps(processedApps || []);
         setError(null);
       } catch (err) {
         console.error('Error fetching public apps:', err);

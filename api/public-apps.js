@@ -18,7 +18,9 @@ export default async function handler(req, res) {
         userCount: apps.userCount,
         revenue: apps.revenue,
         createdAt: apps.createdAt,
-        domain: apps.domain
+        domain: apps.domain,
+        strategy: apps.strategy,
+        actions: apps.actions
       }).from(apps);
       
       return res.status(200).json(appsList);
