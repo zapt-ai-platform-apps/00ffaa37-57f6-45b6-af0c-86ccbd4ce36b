@@ -20,12 +20,9 @@ export default function Layout({ children }) {
           
           {user && (
             <div className="flex items-center space-x-4">
-              <Link to="/" className="text-gray-600 hover:text-gray-900">
-                Public View
-              </Link>
               <button 
                 onClick={signOut} 
-                className="text-gray-600 hover:text-gray-900"
+                className="text-gray-600 hover:text-gray-900 cursor-pointer"
               >
                 Sign Out
               </button>

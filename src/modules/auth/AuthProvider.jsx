@@ -7,17 +7,48 @@ import { useNavigate } from 'react-router-dom';
 
 export const AuthContext = createContext(null);
 
+const AUTHORIZED_EMAILS = [
+  'zapt.ai@gmail.com',
+  // Add other authorized emails here
+];
+
 export default function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hasRecordedLogin, setHasRecordedLogin] = useState(false);
   const [authError, setAuthError] = useState(null);
   const hasSessionRef = useRef(false);
+  const navigate = useNavigate();
   
   // Use this function to update session so we also update our ref
   const updateSession = (newSession) => {
     setSession(newSession);
     hasSessionRef.current = newSession !== null;
+  };
+
+  // Function to check if user has permission
+  const checkUserPermission = (user) => {
+    if (!user || !user.email) return false;
+    return AUTHORIZED_EMAILS.includes(user.email);
+  };
+  
+  // Handle unauthorized user
+  const handleUnauthorizedUser = async (user) => {
+    console.log('Unauthorized access attempt:', user.email);
+    setAuthError('You do not have permission to access this application.');
+    
+    // Redirect to login page to show the error
+    navigate('/login');
+    
+    // Sign out after a short delay to ensure error message is seen
+    setTimeout(async () => {
+      try {
+        await supabase.auth.signOut();
+      } catch (error) {
+        console.error('Error signing out unauthorized user:', error);
+        Sentry.captureException(error);
+      }
+    }, 500);
   };
   
   useEffect(() => {
@@ -29,9 +60,15 @@ export default function AuthProvider({ children }) {
         if (error) throw error;
         
         // Set initial session
-        updateSession(data.session);
         if (data.session) {
-          hasSessionRef.current = true;
+          // Check if user has permission
+          if (checkUserPermission(data.session.user)) {
+            updateSession(data.session);
+            hasSessionRef.current = true;
+          } else {
+            // Handle unauthorized user
+            handleUnauthorizedUser(data.session.user);
+          }
         }
         setLoading(false);
       } catch (error) {
@@ -47,13 +84,21 @@ export default function AuthProvider({ children }) {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       console.log('Auth event:', event, 'Has session:', hasSessionRef.current);
       
-      // For SIGNED_IN, only update session if we don't have one
+      // For SIGNED_IN, handle authorization
       if (event === 'SIGNED_IN') {
         if (!hasSessionRef.current) {
-          updateSession(newSession);
-          if (newSession?.user?.email) {
-            eventBus.publish(events.USER_SIGNED_IN, { user: newSession.user });
-            setHasRecordedLogin(false);
+          const user = newSession?.user;
+          
+          // Check if user has permission
+          if (user && checkUserPermission(user)) {
+            updateSession(newSession);
+            if (user.email) {
+              eventBus.publish(events.USER_SIGNED_IN, { user });
+              setHasRecordedLogin(false);
+            }
+          } else if (user) {
+            // Handle unauthorized user
+            handleUnauthorizedUser(user);
           }
         } else {
           console.log('Already have session, ignoring SIGNED_IN event');
@@ -68,13 +113,14 @@ export default function AuthProvider({ children }) {
         updateSession(null);
         eventBus.publish(events.USER_SIGNED_OUT, {});
         setHasRecordedLogin(false);
+        setAuthError(null); // Clear any auth errors on signout
       }
     });
     
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, []); 
+  }, [navigate]); 
   
   useEffect(() => {
     if (session?.user?.email && !hasRecordedLogin) {
