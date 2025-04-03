@@ -37,6 +37,46 @@ export const getApps = async () => {
   }
 };
 
+export const getPublicApps = async () => {
+  try {
+    const response = await fetch('/api/public-apps', {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch public apps');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error, 'fetching public apps');
+  }
+};
+
+export const getPublicAppById = async (id) => {
+  try {
+    const response = await fetch(`/api/public-app?id=${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch public app');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error, 'fetching public app');
+  }
+};
+
 export const getAppById = async (id) => {
   try {
     const token = await getAuthToken();

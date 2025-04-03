@@ -16,8 +16,14 @@ Sentry.init({
 
 const { supabase } = initializeZapt(process.env.VITE_PUBLIC_APP_ID);
 
-export async function authenticateUser(req) {
+export async function authenticateUser(req, requireAuth = true) {
   const authHeader = req.headers.authorization;
+  
+  // If authentication is not required or we're handling public access
+  if (!requireAuth) {
+    return null;
+  }
+  
   if (!authHeader) {
     throw new Error('Missing Authorization header');
   }
@@ -29,7 +35,7 @@ export async function authenticateUser(req) {
     throw new Error('Invalid token');
   }
 
-  // Only allow david@mapt.events to use the app
+  // Only allow david@mapt.events to use the admin features
   if (user.email !== 'david@mapt.events') {
     throw new Error('Unauthorized user');
   }
