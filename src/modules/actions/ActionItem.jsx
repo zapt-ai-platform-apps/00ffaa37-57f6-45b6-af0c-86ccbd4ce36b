@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function ActionItem({ action, onToggle, onDelete, disabled }) {
+export default function ActionItem({ action, onToggle, onDelete, onEdit, disabled }) {
   const [showConfirmDelete, setShowConfirmDelete] = useState(false);
   
   const handleDeleteClick = (e) => {
@@ -16,7 +16,11 @@ export default function ActionItem({ action, onToggle, onDelete, disabled }) {
   const handleConfirmDelete = (e) => {
     e.stopPropagation();
     setShowConfirmDelete(false);
-    onDelete();
+    onDelete(action.id);
+  };
+
+  const handleToggleChange = () => {
+    onToggle(action.id);
   };
 
   return (
@@ -25,7 +29,7 @@ export default function ActionItem({ action, onToggle, onDelete, disabled }) {
         <input
           type="checkbox"
           checked={action.completed}
-          onChange={onToggle}
+          onChange={handleToggleChange}
           disabled={disabled}
           className="h-5 w-5 text-indigo-600 rounded cursor-pointer"
         />

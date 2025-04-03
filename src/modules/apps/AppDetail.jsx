@@ -107,6 +107,8 @@ export default function AppDetail() {
     
     try {
       setUpdating(true);
+      console.log('Updating actions:', actions);
+      
       // Only send the actions field
       const updatedApp = await updateApp(id, {
         actions

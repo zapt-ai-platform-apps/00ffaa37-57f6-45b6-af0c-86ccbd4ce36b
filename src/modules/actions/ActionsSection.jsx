@@ -35,6 +35,7 @@ export default function ActionsSection({ app, onUpdateActions, isLoading }) {
   
   const handleToggleAction = (id) => {
     try {
+      console.log('Toggling action with ID:', id);
       const updatedActions = actions.map(action => {
         if (action.id === id) {
           return {
@@ -56,10 +57,7 @@ export default function ActionsSection({ app, onUpdateActions, isLoading }) {
   
   const handleDeleteAction = (id) => {
     try {
-      if (!window.confirm('Are you sure you want to delete this action?')) {
-        return;
-      }
-      
+      console.log('Deleting action with ID:', id);
       const updatedActions = actions.filter(action => action.id !== id);
       onUpdateActions(updatedActions);
     } catch (err) {
