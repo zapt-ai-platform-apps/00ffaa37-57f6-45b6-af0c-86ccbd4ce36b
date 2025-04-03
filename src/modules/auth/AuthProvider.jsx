@@ -9,6 +9,7 @@ export const AuthContext = createContext(null);
 
 const AUTHORIZED_EMAILS = [
   'zapt.ai@gmail.com',
+  'david@mapt.events',
   // Add other authorized emails here
 ];
 
