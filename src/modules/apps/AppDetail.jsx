@@ -296,7 +296,7 @@ export default function AppDetail() {
 
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Public Dashboard</h2>
+            <h2 className="text-xl font-semibold">App Visibility</h2>
             
             <div className="flex items-center space-x-3">
               <div className="flex items-center">
@@ -327,7 +327,7 @@ export default function AppDetail() {
             <div className="card mb-4">
               <h3 className="text-lg font-medium mb-2">Your Public Dashboard URL</h3>
               <p className="mb-2 text-sm text-gray-600">
-                Share this link with others to show your app's progress.
+                Share this link with others to show all your public apps.
                 <br />
                 Only apps marked as public will be visible to others.
               </p>

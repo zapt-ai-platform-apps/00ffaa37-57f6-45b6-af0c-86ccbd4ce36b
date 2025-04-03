@@ -13,6 +13,8 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAppForm, setShowAppForm] = useState(false);
+  const [showShareUrl, setShowShareUrl] = useState(false);
+  const [shareUrlCopied, setShareUrlCopied] = useState(false);
 
   useEffect(() => {
     fetchApps();
@@ -58,6 +60,26 @@ const Dashboard = () => {
     setApps(apps.filter(app => app.id !== deletedAppId));
   };
 
+  const getPublicShareUrl = () => {
+    if (!user || !user.id) return '';
+    return `${window.location.origin}/public/${user.id}`;
+  };
+
+  const copyShareUrl = () => {
+    const url = getPublicShareUrl();
+    if (!url) return;
+    
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        setShareUrlCopied(true);
+        setTimeout(() => setShareUrlCopied(false), 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy URL: ', err);
+        Sentry.captureException(err);
+      });
+  };
+
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4 py-8">
@@ -66,17 +88,51 @@ const Dashboard = () => {
             <h1 className="text-3xl font-bold text-gray-900">Your Traction Dashboard</h1>
             <p className="text-gray-600 mt-2">Track and grow your apps' traction metrics</p>
           </div>
-          <button
-            onClick={() => setShowAppForm(!showAppForm)}
-            className="mt-4 md:mt-0 bg-indigo-600 text-white px-4 py-2 rounded-md font-medium hover:bg-indigo-700 transition duration-150 cursor-pointer"
-          >
-            {showAppForm ? 'Cancel' : '+ Add New App'}
-          </button>
+          <div className="mt-4 md:mt-0 flex gap-3">
+            <button
+              onClick={() => setShowShareUrl(!showShareUrl)}
+              className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-md font-medium hover:bg-indigo-200 transition duration-150 cursor-pointer"
+            >
+              Share Dashboard
+            </button>
+            <button
+              onClick={() => setShowAppForm(!showAppForm)}
+              className="bg-indigo-600 text-white px-4 py-2 rounded-md font-medium hover:bg-indigo-700 transition duration-150 cursor-pointer"
+            >
+              {showAppForm ? 'Cancel' : '+ Add New App'}
+            </button>
+          </div>
         </div>
         
         {showAppForm && (
           <div className="mb-8">
             <AppForm onAppCreated={handleAppCreated} onCancel={() => setShowAppForm(false)} />
+          </div>
+        )}
+        
+        {showShareUrl && (
+          <div className="card mb-8">
+            <h3 className="text-lg font-medium mb-2">Your Public Dashboard URL</h3>
+            <p className="mb-2 text-sm text-gray-600">
+              Share this link with others to show all your public apps.
+              <br />
+              Only apps marked as public will be visible to others.
+            </p>
+            
+            <div className="flex items-center">
+              <input
+                type="text"
+                value={getPublicShareUrl()}
+                readOnly
+                className="input box-border border-gray-300 flex-grow"
+              />
+              <button
+                onClick={copyShareUrl}
+                className="ml-2 btn-primary cursor-pointer"
+              >
+                {shareUrlCopied ? 'Copied!' : 'Copy'}
+              </button>
+            </div>
           </div>
         )}
         
