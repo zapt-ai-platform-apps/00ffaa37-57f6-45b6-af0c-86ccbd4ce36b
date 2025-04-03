@@ -6,6 +6,7 @@ export default function AppForm({ onSubmit, onCancel, isLoading, initialData = {
     description: initialData.description || '',
     userCount: initialData.userCount || 0,
     revenue: initialData.revenue || 0,
+    domain: initialData.domain || '',
     ...initialData
   });
 
@@ -52,8 +53,21 @@ export default function AppForm({ onSubmit, onCancel, isLoading, initialData = {
       newErrors.revenue = 'Revenue cannot be negative';
     }
     
+    // Optional domain validation - if provided, must be a valid URL
+    if (formData.domain && !isValidDomain(formData.domain)) {
+      newErrors.domain = 'Please enter a valid domain (e.g., example.com)';
+    }
+    
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const isValidDomain = (domain) => {
+    // Simple domain validation - can be enhanced as needed
+    const domainRegex = /^([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+    return domainRegex.test(domain) || 
+           // Also allow full URLs
+           /^https?:\/\/([a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(\/.*)?$/.test(domain);
   };
 
   const handleSubmit = (e) => {
@@ -76,7 +90,7 @@ export default function AppForm({ onSubmit, onCancel, isLoading, initialData = {
           name="name"
           value={formData.name}
           onChange={handleChange}
-          className={`input w-full ${errors.name ? 'border-red-500' : ''}`}
+          className={`input w-full box-border ${errors.name ? 'border-red-500' : ''}`}
           disabled={isLoading}
         />
         {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
@@ -92,10 +106,30 @@ export default function AppForm({ onSubmit, onCancel, isLoading, initialData = {
           value={formData.description}
           onChange={handleChange}
           rows="3"
-          className={`input w-full ${errors.description ? 'border-red-500' : ''}`}
+          className={`input w-full box-border ${errors.description ? 'border-red-500' : ''}`}
           disabled={isLoading}
         ></textarea>
         {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
+      </div>
+      
+      <div className="mb-4">
+        <label htmlFor="domain" className="block text-sm font-medium text-gray-700 mb-1">
+          App Domain
+        </label>
+        <input
+          type="text"
+          id="domain"
+          name="domain"
+          value={formData.domain}
+          onChange={handleChange}
+          placeholder="example.com or https://example.com"
+          className={`input w-full box-border ${errors.domain ? 'border-red-500' : ''}`}
+          disabled={isLoading}
+        />
+        {errors.domain && <p className="mt-1 text-sm text-red-600">{errors.domain}</p>}
+        <p className="mt-1 text-xs text-gray-500">
+          Add your app domain to allow users to visit your app directly
+        </p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -110,7 +144,7 @@ export default function AppForm({ onSubmit, onCancel, isLoading, initialData = {
             value={formData.userCount}
             onChange={handleChange}
             min="0"
-            className={`input w-full ${errors.userCount ? 'border-red-500' : ''}`}
+            className={`input w-full box-border ${errors.userCount ? 'border-red-500' : ''}`}
             disabled={isLoading}
           />
           {errors.userCount && <p className="mt-1 text-sm text-red-600">{errors.userCount}</p>}
@@ -128,7 +162,7 @@ export default function AppForm({ onSubmit, onCancel, isLoading, initialData = {
             onChange={handleChange}
             min="0"
             step="0.01"
-            className={`input w-full ${errors.revenue ? 'border-red-500' : ''}`}
+            className={`input w-full box-border ${errors.revenue ? 'border-red-500' : ''}`}
             disabled={isLoading}
           />
           {errors.revenue && <p className="mt-1 text-sm text-red-600">{errors.revenue}</p>}
@@ -139,14 +173,14 @@ export default function AppForm({ onSubmit, onCancel, isLoading, initialData = {
         <button
           type="button"
           onClick={onCancel}
-          className="btn-secondary"
+          className="btn-secondary cursor-pointer"
           disabled={isLoading}
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="btn-primary flex items-center"
+          className="btn-primary flex items-center cursor-pointer"
           disabled={isLoading}
         >
           {isLoading ? (

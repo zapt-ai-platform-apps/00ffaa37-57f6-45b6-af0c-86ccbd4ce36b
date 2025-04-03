@@ -28,6 +28,27 @@ const PublicAppsList = ({ apps }) => {
     }
   };
 
+  const formatDomain = (domain) => {
+    if (!domain) return null;
+    
+    // If domain already has http/https, return as is
+    if (domain.startsWith('http://') || domain.startsWith('https://')) {
+      return domain;
+    }
+    
+    // Otherwise, add https://
+    return `https://${domain}`;
+  };
+
+  const visitApp = (e, domain) => {
+    e.stopPropagation(); // Prevent expanding/collapsing the app details
+    
+    if (!domain) return;
+    
+    const formattedDomain = formatDomain(domain);
+    window.open(formattedDomain, '_blank', 'noopener,noreferrer');
+  };
+
   if (apps.length === 0) {
     return (
       <div className="text-center py-10">
@@ -44,18 +65,26 @@ const PublicAppsList = ({ apps }) => {
           {apps.map((app) => (
             <li key={app.id}>
               <div 
-                className="px-4 py-5 cursor-pointer hover:bg-gray-50 transition-colors"
+                className="px-4 py-5 hover:bg-gray-50 transition-colors"
                 onClick={() => handleAppClick(app.id)}
               >
                 <div className="flex items-center justify-between">
-                  <div>
+                  <div className="cursor-pointer">
                     <h3 className="text-lg font-medium text-indigo-600">{app.name}</h3>
                     <p className="mt-1 text-sm text-gray-500">{app.description}</p>
                     <p className="mt-1 text-xs text-gray-400">
                       Created {formatDistanceToNow(new Date(app.createdAt), { addSuffix: true })}
                     </p>
                   </div>
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 items-center">
+                    {app.domain && (
+                      <button
+                        onClick={(e) => visitApp(e, app.domain)}
+                        className="text-sm text-white bg-indigo-600 hover:bg-indigo-700 py-1 px-3 rounded cursor-pointer transition-colors"
+                      >
+                        Visit App
+                      </button>
+                    )}
                     <div className="text-right">
                       <p className="text-sm font-medium text-gray-900">{app.userCount || 0}</p>
                       <p className="text-xs text-gray-500">Users</p>
@@ -89,6 +118,21 @@ const PublicAppsList = ({ apps }) => {
 
                 {expandedApp === app.id && !loading && !detailError && (
                   <div className="mt-4 border-t pt-4">
+                    {app.domain && (
+                      <div className="mb-4">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">App Domain</h4>
+                        <a 
+                          href={formatDomain(app.domain)} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-sm text-indigo-600 hover:text-indigo-800 hover:underline"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {app.domain}
+                        </a>
+                      </div>
+                    )}
+                    
                     {app.strategy && (
                       <div className="mb-4">
                         <h4 className="text-sm font-medium text-gray-700 mb-2">Strategy</h4>

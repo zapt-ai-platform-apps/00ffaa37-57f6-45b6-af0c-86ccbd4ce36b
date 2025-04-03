@@ -3,7 +3,6 @@ import useAuth from '@/modules/auth/hooks/useAuth';
 import Layout from '@/shared/components/Layout';
 import AppList from '@/modules/apps/AppList';
 import AppForm from '@/modules/apps/AppForm';
-import TractionSummary from '@/modules/dashboard/TractionSummary';
 import { getApps, createApp } from '@/modules/apps/api';
 import * as Sentry from '@sentry/browser';
 
@@ -59,8 +58,6 @@ export default function Dashboard() {
             <span className="text-sm text-gray-600">{user?.email}</span>
           </div>
         </div>
-
-        <TractionSummary apps={apps} />
 
         <div className="mt-8">
           <div className="flex justify-between items-center mb-4">

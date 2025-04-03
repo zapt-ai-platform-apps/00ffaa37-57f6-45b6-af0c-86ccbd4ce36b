@@ -9,5 +9,6 @@ export const apps = pgTable('apps', {
   createdAt: timestamp('created_at').defaultNow(),
   userId: uuid('user_id').notNull(),
   strategy: text('strategy'),
-  actions: jsonb('actions').default([])
+  actions: jsonb('actions').default([]),
+  domain: text('domain')
 });

@@ -27,7 +27,8 @@ export default async function handler(req, res) {
         revenue: appData.revenue || 0,
         userId: user.id,
         strategy: appData.strategy || null,
-        actions: appData.actions || []
+        actions: appData.actions || [],
+        domain: appData.domain || null
       }).returning();
       
       return res.status(201).json(newApp);

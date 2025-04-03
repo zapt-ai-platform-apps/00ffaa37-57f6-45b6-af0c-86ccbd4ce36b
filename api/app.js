@@ -42,7 +42,8 @@ export default async function handler(req, res) {
           userCount: appData.userCount,
           revenue: appData.revenue,
           strategy: appData.strategy,
-          actions: appData.actions
+          actions: appData.actions,
+          domain: appData.domain
         })
         .where(and(eq(apps.id, id), eq(apps.userId, user.id)))
         .returning();
