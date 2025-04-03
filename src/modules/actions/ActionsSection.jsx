@@ -100,13 +100,13 @@ export default function ActionsSection({ app, onUpdateApp }) {
           <div className="flex space-x-2">
             <button 
               onClick={() => setIsGeneratingAction(true)}
-              className="btn-primary text-sm"
+              className="btn-primary text-sm cursor-pointer"
             >
-              Generate Next Action
+              Generate Quick Action
             </button>
             <button 
               onClick={() => setIsAddingAction(true)}
-              className="btn-secondary text-sm"
+              className="btn-secondary text-sm cursor-pointer"
             >
               Add Custom Action
             </button>

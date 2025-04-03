@@ -85,7 +85,7 @@ export default function ActionGenerator({ app, onAddAction, onCancel }) {
         <div>
           <div className="mb-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              AI-Generated Next Action:
+              AI-Generated Next Action <span className="text-xs text-gray-500">(achievable within 1-2 days)</span>:
             </label>
             <div className="bg-indigo-50 border border-indigo-100 p-3 rounded-md">
               <p className="text-gray-800">{generatedAction}</p>

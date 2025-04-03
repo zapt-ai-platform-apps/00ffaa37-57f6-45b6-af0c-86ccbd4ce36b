@@ -53,11 +53,18 @@ export default async function handler(req, res) {
       
       The action should be:
       - Specific and actionable (something I can actually do)
+      - Achievable within 1-2 days at most
+      - Small in scope with clear completion criteria
       - Realistic for a small team or solo developer
       - Likely to help drive measurable growth
       - Concise (under 30 words)
       
-      Give me just the action as a direct statement, without any introduction or explanation. For example: "Create a referral program where users get one month free for each friend they invite."
+      Examples of good actions:
+      - "Create 3 social media posts showcasing your app's core features"
+      - "Reach out to 5 potential users for feedback via email"
+      - "Add a prominent call-to-action button on your landing page"
+      
+      Give me just the action as a direct statement, without any introduction or explanation.
     `;
     
     const response = await anthropic.messages.create({
