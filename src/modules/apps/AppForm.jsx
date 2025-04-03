@@ -6,7 +6,6 @@ export default function AppForm({ app, onSubmit, onCancel, isLoading }) {
   const [userCount, setUserCount] = useState(app?.userCount || 0);
   const [revenue, setRevenue] = useState(app?.revenue || 0);
   const [domain, setDomain] = useState(app?.domain || '');
-  const [isPublic, setIsPublic] = useState(app?.isPublic || false);
   const [errors, setErrors] = useState({});
 
   const validateForm = () => {
@@ -28,7 +27,8 @@ export default function AppForm({ app, onSubmit, onCancel, isLoading }) {
         userCount: Number(userCount),
         revenue: Number(revenue),
         domain: domain.trim() || null,
-        isPublic
+        // All apps are public by default - no longer a toggle
+        isPublic: true
       });
     }
   };
@@ -44,7 +44,7 @@ export default function AppForm({ app, onSubmit, onCancel, isLoading }) {
           id="name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className={`input ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+          className={`input box-border ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
           placeholder="My Awesome App"
         />
         {errors.name && <p className="mt-1 text-sm text-red-600">{errors.name}</p>}
@@ -58,7 +58,7 @@ export default function AppForm({ app, onSubmit, onCancel, isLoading }) {
           id="description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          className={`input ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
+          className={`input box-border ${errors.description ? 'border-red-500' : 'border-gray-300'}`}
           rows="3"
           placeholder="A brief description of what your app does"
         ></textarea>
@@ -75,7 +75,7 @@ export default function AppForm({ app, onSubmit, onCancel, isLoading }) {
             id="userCount"
             value={userCount}
             onChange={(e) => setUserCount(e.target.value)}
-            className="input border-gray-300"
+            className="input box-border border-gray-300"
             min="0"
           />
         </div>
@@ -89,7 +89,7 @@ export default function AppForm({ app, onSubmit, onCancel, isLoading }) {
             id="revenue"
             value={revenue}
             onChange={(e) => setRevenue(e.target.value)}
-            className="input border-gray-300"
+            className="input box-border border-gray-300"
             min="0"
             step="0.01"
           />
@@ -105,7 +105,7 @@ export default function AppForm({ app, onSubmit, onCancel, isLoading }) {
           id="domain"
           value={domain}
           onChange={(e) => setDomain(e.target.value)}
-          className="input border-gray-300"
+          className="input box-border border-gray-300"
           placeholder="https://myapp.com"
         />
         <p className="mt-1 text-sm text-gray-500">
@@ -113,23 +113,7 @@ export default function AppForm({ app, onSubmit, onCancel, isLoading }) {
         </p>
       </div>
       
-      <div className="mb-6">
-        <div className="flex items-center">
-          <input
-            type="checkbox"
-            id="isPublic"
-            checked={isPublic}
-            onChange={(e) => setIsPublic(e.target.checked)}
-            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
-          />
-          <label htmlFor="isPublic" className="ml-2 block text-sm font-medium text-gray-700">
-            Make this app public
-          </label>
-        </div>
-        <p className="mt-1 text-sm text-gray-500 ml-6">
-          When enabled, this app will be visible on your public dashboard
-        </p>
-      </div>
+      {/* The isPublic checkbox has been removed */}
       
       <div className="flex justify-end space-x-3">
         <button

@@ -17,8 +17,6 @@ export default function AppDetail() {
   const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
   const [showEditForm, setShowEditForm] = useState(false);
-  const [showShareUrl, setShowShareUrl] = useState(false);
-  const [shareUrlCopied, setShareUrlCopied] = useState(false);
 
   useEffect(() => {
     fetchAppData();
@@ -38,7 +36,8 @@ export default function AppDetail() {
         ...appData,
         userCount: typeof appData.userCount === 'number' ? appData.userCount : 0,
         revenue: typeof appData.revenue === 'number' ? appData.revenue : 0,
-        actions: Array.isArray(appData.actions) ? appData.actions : []
+        actions: Array.isArray(appData.actions) ? appData.actions : [],
+        isPublic: true // All apps are now public by default
       };
       
       setApp(normalizedApp);
@@ -58,9 +57,11 @@ export default function AppDetail() {
     try {
       setUpdating(true);
       // Merge with existing app data to avoid losing fields not in the form
+      // All apps are public by default
       const updatedApp = await updateApp(id, {
         ...app,
-        ...updatedData
+        ...updatedData,
+        isPublic: true
       });
       setApp(updatedApp);
       setShowEditForm(false);
@@ -150,47 +151,6 @@ export default function AppDetail() {
       setError('Failed to delete app. Please try again.');
       setUpdating(false);
     }
-  };
-
-  const toggleAppPublic = async () => {
-    if (!app) return;
-    
-    try {
-      setUpdating(true);
-      const updatedApp = await updateApp(id, {
-        ...app,
-        isPublic: !app.isPublic
-      });
-      setApp(updatedApp);
-      setError(null);
-    } catch (err) {
-      console.error('Error updating public status:', err);
-      Sentry.captureException(err);
-      setError('Failed to update app visibility. Please try again.');
-    } finally {
-      setUpdating(false);
-    }
-  };
-
-  const getPublicShareUrl = () => {
-    if (!user || !user.id) return '';
-    // Create a URL for the user's public dashboard
-    return `${window.location.origin}/public/${user.id}`;
-  };
-
-  const copyShareUrl = () => {
-    const url = getPublicShareUrl();
-    if (!url) return;
-    
-    navigator.clipboard.writeText(url)
-      .then(() => {
-        setShareUrlCopied(true);
-        setTimeout(() => setShareUrlCopied(false), 2000);
-      })
-      .catch(err => {
-        console.error('Failed to copy URL: ', err);
-        Sentry.captureException(err);
-      });
   };
 
   if (loading) {
@@ -293,62 +253,6 @@ export default function AppDetail() {
             />
           </div>
         )}
-
-        <div className="mb-8">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">App Visibility</h2>
-            
-            <div className="flex items-center space-x-3">
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  id="togglePublic"
-                  checked={app.isPublic}
-                  onChange={toggleAppPublic}
-                  disabled={updating}
-                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
-                />
-                <label htmlFor="togglePublic" className="ml-2 text-sm font-medium text-gray-700">
-                  Make this app public
-                </label>
-              </div>
-              
-              <button 
-                onClick={() => setShowShareUrl(!showShareUrl)}
-                className="btn-secondary cursor-pointer"
-                disabled={updating}
-              >
-                Share Dashboard
-              </button>
-            </div>
-          </div>
-          
-          {showShareUrl && (
-            <div className="card mb-4">
-              <h3 className="text-lg font-medium mb-2">Your Public Dashboard URL</h3>
-              <p className="mb-2 text-sm text-gray-600">
-                Share this link with others to show all your public apps.
-                <br />
-                Only apps marked as public will be visible to others.
-              </p>
-              
-              <div className="flex items-center">
-                <input
-                  type="text"
-                  value={getPublicShareUrl()}
-                  readOnly
-                  className="input box-border border-gray-300 flex-grow"
-                />
-                <button
-                  onClick={copyShareUrl}
-                  className="ml-2 btn-primary cursor-pointer"
-                >
-                  {shareUrlCopied ? 'Copied!' : 'Copy'}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
           <MetricsForm 
