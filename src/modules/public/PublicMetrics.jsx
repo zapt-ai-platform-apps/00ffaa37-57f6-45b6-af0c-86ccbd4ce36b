@@ -6,8 +6,19 @@ import {
   IoCheckmarkDoneOutline 
 } from 'react-icons/io5';
 
-export default function PublicMetrics({ apps = [] }) {
+export default function PublicMetrics({ apps = [], isLandingPage = false }) {
   const stats = useMemo(() => {
+    // Use hardcoded zeros for landing page
+    if (isLandingPage) {
+      return {
+        totalApps: 0,
+        totalUsers: 0,
+        totalRevenue: 0,
+        completedActions: 0,
+        totalActions: 0
+      };
+    }
+    
     // Ensure apps is always an array before reducing
     const safeApps = Array.isArray(apps) ? apps : [];
     
@@ -21,7 +32,7 @@ export default function PublicMetrics({ apps = [] }) {
       },
       { totalApps: safeApps.length, totalUsers: 0, totalRevenue: 0, completedActions: 0, totalActions: 0 }
     );
-  }, [apps]);
+  }, [apps, isLandingPage]);
 
   const actionCompletionPercentage = stats.totalActions > 0 
     ? Math.round((stats.completedActions / stats.totalActions) * 100) 

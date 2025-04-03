@@ -1,212 +1,235 @@
-import * as Sentry from '@sentry/browser';
 import { supabase } from '@/supabaseClient';
+import * as Sentry from '@sentry/browser';
 
-// Helper function to get auth token
-async function getAuthToken() {
-  const { data: { session } } = await supabase.auth.getSession();
-  return session?.access_token;
+// Get all apps for the authenticated user
+export async function getApps() {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('apps')
+      .select('*')
+      .eq('user_id', session.user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    // Ensure actions is parsed for each app
+    return data.map(app => {
+      if (app.actions && typeof app.actions === 'string') {
+        try {
+          app.actions = JSON.parse(app.actions);
+        } catch (error) {
+          console.error('Error parsing actions:', error);
+          app.actions = [];
+        }
+      }
+      return app;
+    });
+  } catch (error) {
+    console.error('Error getting apps:', error);
+    Sentry.captureException(error);
+    throw error;
+  }
 }
 
-// Function to handle API errors
-function handleApiError(error, operation) {
-  console.error(`Error during ${operation}:`, error);
-  Sentry.captureException(error);
-  throw error;
+// Get a single app by ID
+export async function getApp(id) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('apps')
+      .select('*')
+      .eq('id', id)
+      .eq('user_id', session.user.id)
+      .single();
+
+    if (error) throw error;
+
+    // Ensure actions is parsed
+    if (data.actions && typeof data.actions === 'string') {
+      try {
+        data.actions = JSON.parse(data.actions);
+      } catch (error) {
+        console.error('Error parsing actions:', error);
+        data.actions = [];
+      }
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error getting app:', error);
+    Sentry.captureException(error);
+    throw error;
+  }
 }
 
-export const getApps = async () => {
+// Create a new app
+export async function createApp(appData) {
   try {
-    const token = await getAuthToken();
-    
-    const response = await fetch('/api/apps', {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      }
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch apps');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return handleApiError(error, 'fetching apps');
-  }
-};
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
 
-export const getPublicApps = async () => {
-  try {
-    const response = await fetch('/api/public-apps', {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch public apps');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return handleApiError(error, 'fetching public apps');
-  }
-};
+    const { data, error } = await supabase
+      .from('apps')
+      .insert([
+        {
+          ...appData,
+          user_id: session.user.id,
+          actions: []
+        }
+      ])
+      .select();
 
-export const getUserPublicApps = async (userId) => {
-  try {
-    const response = await fetch(`/api/public-apps?userId=${userId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch user public apps');
-    }
-    
-    return await response.json();
+    if (error) throw error;
+    return data[0];
   } catch (error) {
-    return handleApiError(error, 'fetching user public apps');
+    console.error('Error creating app:', error);
+    Sentry.captureException(error);
+    throw error;
   }
-};
+}
 
-export const getUserPublicDashboard = async (userId) => {
+// Update an app
+export async function updateApp(id, appData) {
   try {
-    const response = await fetch(`/api/public-user?userId=${userId}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch user public dashboard');
-    }
-    
-    return await response.json();
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
+
+    // Ensure we're not trying to update the user_id
+    const { user_id, ...safeData } = appData;
+
+    const { data, error } = await supabase
+      .from('apps')
+      .update(safeData)
+      .eq('id', id)
+      .eq('user_id', session.user.id)
+      .select();
+
+    if (error) throw error;
+    return data[0];
   } catch (error) {
-    return handleApiError(error, 'fetching user public dashboard');
+    console.error('Error updating app:', error);
+    Sentry.captureException(error);
+    throw error;
   }
-};
+}
 
-export const getPublicAppById = async (id) => {
+// Delete an app
+export async function deleteApp(id) {
   try {
-    const response = await fetch(`/api/public-app?id=${id}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch public app');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return handleApiError(error, 'fetching public app');
-  }
-};
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
 
-export const getAppById = async (id) => {
-  try {
-    const token = await getAuthToken();
-    
-    const response = await fetch(`/api/app?id=${id}`, {
-      method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      }
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to fetch app');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return handleApiError(error, 'fetching app');
-  }
-};
+    const { error } = await supabase
+      .from('apps')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', session.user.id);
 
-export const createApp = async (appData) => {
-  try {
-    const token = await getAuthToken();
-    
-    const response = await fetch('/api/apps', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(appData)
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to create app');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return handleApiError(error, 'creating app');
-  }
-};
-
-export const updateApp = async (id, appData) => {
-  try {
-    const token = await getAuthToken();
-    
-    const response = await fetch(`/api/app?id=${id}`, {
-      method: 'PUT',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(appData)
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to update app');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    return handleApiError(error, 'updating app');
-  }
-};
-
-export const deleteApp = async (id) => {
-  try {
-    const token = await getAuthToken();
-    
-    const response = await fetch(`/api/app?id=${id}`, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      }
-    });
-    
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to delete app');
-    }
-    
+    if (error) throw error;
     return true;
   } catch (error) {
-    return handleApiError(error, 'deleting app');
+    console.error('Error deleting app:', error);
+    Sentry.captureException(error);
+    throw error;
   }
-};
+}
+
+// Update the actions list for an app
+export async function updateActions(id, actions) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('apps')
+      .update({ actions })
+      .eq('id', id)
+      .eq('user_id', session.user.id)
+      .select();
+
+    if (error) throw error;
+    return data[0];
+  } catch (error) {
+    console.error('Error updating actions:', error);
+    Sentry.captureException(error);
+    throw error;
+  }
+}
+
+// Update the metrics for an app
+export async function updateMetrics(id, { userCount, revenue }) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('apps')
+      .update({ 
+        user_count: userCount, 
+        revenue 
+      })
+      .eq('id', id)
+      .eq('user_id', session.user.id)
+      .select();
+
+    if (error) throw error;
+    return data[0];
+  } catch (error) {
+    console.error('Error updating metrics:', error);
+    Sentry.captureException(error);
+    throw error;
+  }
+}
+
+// Get all public apps
+export async function getPublicApps() {
+  try {
+    const { data, error } = await fetch('/api/public-apps').then(res => res.json());
+    if (error) throw new Error(error);
+    return data || [];
+  } catch (error) {
+    console.error('Error getting public apps:', error);
+    Sentry.captureException(error);
+    throw error;
+  }
+}
+
+// Get public dashboard for a user
+export async function getUserPublicDashboard(userId) {
+  try {
+    const { data, error } = await fetch(`/api/public-user?userId=${userId}`).then(res => res.json());
+    if (error) throw new Error(error);
+    return data || { apps: [], metrics: {} };
+  } catch (error) {
+    console.error('Error getting public dashboard:', error);
+    Sentry.captureException(error);
+    throw error;
+  }
+}
+
+// Update public status of an app
+export async function updatePublicStatus(id, isPublic) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
+
+    const { data, error } = await supabase
+      .from('apps')
+      .update({ is_public: isPublic })
+      .eq('id', id)
+      .eq('user_id', session.user.id)
+      .select();
+
+    if (error) throw error;
+    return data[0];
+  } catch (error) {
+    console.error('Error updating public status:', error);
+    Sentry.captureException(error);
+    throw error;
+  }
+}
