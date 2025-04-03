@@ -115,8 +115,6 @@ const Dashboard = () => {
             <h3 className="text-lg font-medium mb-2">Your Public Dashboard URL</h3>
             <p className="mb-2 text-sm text-gray-600">
               Share this link with others to show all your public apps.
-              <br />
-              Only apps marked as public will be visible to others.
             </p>
             
             <div className="flex items-center">

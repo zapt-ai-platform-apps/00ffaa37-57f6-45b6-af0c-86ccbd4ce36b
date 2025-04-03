@@ -49,6 +49,37 @@ const PublicAppsList = ({ apps }) => {
     window.open(formattedDomain, '_blank', 'noopener,noreferrer');
   };
 
+  const renderAppActions = (app) => {
+    if (!app.actions || !Array.isArray(app.actions) || app.actions.length === 0) {
+      return (
+        <div className="bg-gray-50 p-4 rounded-lg">
+          <h4 className="font-medium text-gray-900 mb-3">Action Items</h4>
+          <p className="text-gray-500">No actions available for this app.</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="bg-gray-50 p-4 rounded-lg">
+        <h4 className="font-medium text-gray-900 mb-3">Action Items</h4>
+        <ul className="space-y-2">
+          {app.actions.map((action, index) => (
+            <li key={action.id || index} className="flex items-center">
+              {action.completed ? (
+                <IoCheckmarkCircle className="h-5 w-5 text-green-500 flex-shrink-0 mr-2" />
+              ) : (
+                <div className="h-5 w-5 border-2 border-gray-300 rounded-full flex-shrink-0 mr-2"></div>
+              )}
+              <span className={`${action.completed ? 'text-gray-500' : 'text-gray-700'}`}>
+                {action.text}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
   if (apps.length === 0) {
     return (
       <div className="text-center py-10">
@@ -132,6 +163,13 @@ const PublicAppsList = ({ apps }) => {
                 </div>
               </div>
 
+              {/* Always show actions section for each app */}
+              <div className={`mt-6 pt-4 border-t border-gray-100 ${expandedApp !== app.id && 'hidden md:block'}`}>
+                <div className="grid grid-cols-1 gap-6">
+                  {renderAppActions(app)}
+                </div>
+              </div>
+
               {loading && expandedApp === app.id && (
                 <div className="mt-6 py-2">
                   <div className="animate-pulse flex space-x-4">
@@ -153,35 +191,12 @@ const PublicAppsList = ({ apps }) => {
               )}
 
               {expandedApp === app.id && !loading && !detailError && (
-                <div className="mt-6 pt-4 border-t border-gray-100">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="mt-6 pt-4 border-t border-gray-100 md:hidden">
+                  <div className="grid grid-cols-1 gap-6">
                     {app.strategy && (
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <h4 className="font-medium text-gray-900 mb-3">Growth Strategy</h4>
                         <p className="text-gray-700 whitespace-pre-line">{app.strategy}</p>
-                      </div>
-                    )}
-                    
-                    {app.actions && app.actions.length > 0 && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h4 className="font-medium text-gray-900 mb-3">Action Items</h4>
-                        <ul className="space-y-2">
-                          {Array.isArray(app.actions) 
-                            ? app.actions.map((action, index) => (
-                                <li key={action.id || index} className="flex items-center">
-                                  {action.completed ? (
-                                    <IoCheckmarkCircle className="h-5 w-5 text-green-500 flex-shrink-0 mr-2" />
-                                  ) : (
-                                    <div className="h-5 w-5 border-2 border-gray-300 rounded-full flex-shrink-0 mr-2"></div>
-                                  )}
-                                  <span className={`${action.completed ? 'text-gray-500' : 'text-gray-700'}`}>
-                                    {action.text}
-                                  </span>
-                                </li>
-                              ))
-                            : <li>No actions available</li>
-                          }
-                        </ul>
                       </div>
                     )}
                   </div>
