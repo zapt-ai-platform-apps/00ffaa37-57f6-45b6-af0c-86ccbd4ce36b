@@ -60,7 +60,7 @@ const PublicAppsList = ({ apps }) => {
   return (
     <div className="py-16">
       <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Featured Apps</h2>
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Apps</h2>
         <p className="mt-3 text-xl text-gray-600">Discover and explore apps built with ZAPT</p>
       </div>
       

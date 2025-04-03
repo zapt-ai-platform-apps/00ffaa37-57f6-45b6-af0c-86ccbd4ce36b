@@ -7,6 +7,7 @@ import MetricsForm from '@/modules/metrics/MetricsForm';
 import ActionsSection from '@/modules/actions/ActionsSection';
 import * as Sentry from '@sentry/browser';
 import useAuth from '@/modules/auth/hooks/useAuth';
+import { IoArrowBack } from 'react-icons/io5';
 
 export default function AppDetail() {
   const { id } = useParams();
@@ -197,6 +198,14 @@ export default function AppDetail() {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <button
+          onClick={() => navigate('/dashboard')}
+          className="mb-6 flex items-center text-indigo-600 hover:text-indigo-800 cursor-pointer"
+        >
+          <IoArrowBack className="h-5 w-5 mr-1" />
+          Back to Dashboard
+        </button>
+        
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
           <div>
             <div className="flex items-center mb-2">
