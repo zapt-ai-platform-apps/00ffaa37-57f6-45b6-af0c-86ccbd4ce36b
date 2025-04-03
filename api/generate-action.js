@@ -17,7 +17,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
     
-    console.log('Generating next action for app:', appName);
+    console.log('Generating actions for app:', appName);
     
     const anthropic = new Anthropic({
       apiKey: process.env.ANTHROPIC_API_KEY,
@@ -49,9 +49,9 @@ export default async function handler(req, res) {
       Currently, it has ${userCount || 0} users and has generated $${revenue || 0} in revenue.
       ${actionsText}
       
-      Based on this information and any actions already completed or in progress, please suggest a single, specific next action I should take to grow my app's user base or revenue.
+      Based on this information and any actions already completed or in progress, please suggest THREE DISTINCT specific next actions I should take to grow my app's user base or revenue.
       
-      The action should be:
+      Each action should be:
       - Specific and actionable (something I can actually do)
       - Achievable within 1-2 days at most
       - Small in scope with clear completion criteria
@@ -64,7 +64,10 @@ export default async function handler(req, res) {
       - "Reach out to 5 potential users for feedback via email"
       - "Add a prominent call-to-action button on your landing page"
       
-      Give me just the action as a direct statement, without any introduction or explanation.
+      Format your answer as a JSON array with exactly 3 items, like this:
+      ["Action 1", "Action 2", "Action 3"]
+      
+      Just provide the JSON array directly without any explanation or additional text.
     `;
     
     const response = await anthropic.messages.create({
@@ -73,12 +76,42 @@ export default async function handler(req, res) {
       messages: [{ role: "user", content: prompt }],
     });
     
-    console.log('Next action generated successfully');
-    return res.status(200).json({ action: response.content[0].text.trim() });
+    // Extract the JSON array from the response
+    const actionsMatch = response.content[0].text.match(/\[.*\]/s);
+    let generatedActions = [];
+    
+    if (actionsMatch) {
+      try {
+        generatedActions = JSON.parse(actionsMatch[0]);
+      } catch (error) {
+        console.error('Error parsing actions from AI response:', error);
+        console.log('Raw AI response:', response.content[0].text);
+        
+        // Fallback to basic parsing if JSON.parse fails
+        const text = response.content[0].text.trim();
+        const lines = text.split('\n').filter(line => line.trim().startsWith('-'));
+        generatedActions = lines.slice(0, 3).map(line => line.trim().replace(/^-\s*/, ''));
+      }
+    } else {
+      // Fallback parsing for non-compliant format
+      const text = response.content[0].text.trim();
+      const lines = text.split('\n').filter(line => line.trim().startsWith('-') || line.trim().match(/^\d+\./));
+      generatedActions = lines.slice(0, 3).map(line => line.trim().replace(/^-\s*/, '').replace(/^\d+\.\s*/, ''));
+    }
+    
+    // Ensure we have exactly 3 actions
+    while (generatedActions.length < 3) {
+      generatedActions.push(`Action idea ${generatedActions.length + 1} (AI had trouble generating this one)`);
+    }
+    
+    generatedActions = generatedActions.slice(0, 3); // Limit to exactly 3 actions
+    
+    console.log('Actions generated successfully:', generatedActions);
+    return res.status(200).json({ actions: generatedActions });
     
   } catch (error) {
-    console.error('Error generating next action:', error);
+    console.error('Error generating actions:', error);
     Sentry.captureException(error);
-    return res.status(500).json({ error: error.message || 'An error occurred while generating next action' });
+    return res.status(500).json({ error: error.message || 'An error occurred while generating actions' });
   }
 }

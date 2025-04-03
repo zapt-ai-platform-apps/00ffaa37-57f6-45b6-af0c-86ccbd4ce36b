@@ -4,12 +4,12 @@ import ActionForm from './ActionForm';
 import ActionItem from './ActionItem';
 import * as Sentry from '@sentry/browser';
 
-export default function ActionsSection({ app, onUpdateStrategy, onUpdateActions, isLoading }) {
+export default function ActionsSection({ app, onUpdateActions, isLoading }) {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showGenerator, setShowGenerator] = useState(false);
   const [error, setError] = useState(null);
   
-  const { strategy, actions = [] } = app;
+  const { actions = [] } = app;
   
   const handleAddAction = (text) => {
     try {
@@ -25,6 +25,7 @@ export default function ActionsSection({ app, onUpdateStrategy, onUpdateActions,
       const updatedActions = [...actions, newAction];
       onUpdateActions(updatedActions);
       setShowAddForm(false);
+      setShowGenerator(false);
     } catch (err) {
       console.error('Error adding action:', err);
       Sentry.captureException(err);
@@ -87,28 +88,6 @@ export default function ActionsSection({ app, onUpdateStrategy, onUpdateActions,
       setError('Failed to update action. Please try again.');
     }
   };
-  
-  const handleStrategyUpdated = (newStrategy) => {
-    try {
-      onUpdateStrategy(newStrategy);
-      setShowGenerator(false);
-    } catch (err) {
-      console.error('Error updating strategy:', err);
-      Sentry.captureException(err);
-      setError('Failed to update strategy. Please try again.');
-    }
-  };
-  
-  const handleActionGenerated = (newAction) => {
-    try {
-      handleAddAction(newAction);
-      setShowGenerator(false);
-    } catch (err) {
-      console.error('Error adding generated action:', err);
-      Sentry.captureException(err);
-      setError('Failed to add generated action. Please try again.');
-    }
-  };
 
   const pendingActions = actions.filter(a => !a.completed);
   const completedActions = actions.filter(a => a.completed);
@@ -116,13 +95,13 @@ export default function ActionsSection({ app, onUpdateStrategy, onUpdateActions,
   return (
     <div className="card">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-lg font-semibold">Growth Strategy & Actions</h2>
+        <h2 className="text-lg font-semibold">Growth Actions</h2>
         <button 
           onClick={() => setShowGenerator(true)}
-          className="btn-secondary cursor-pointer"
+          className="btn-primary cursor-pointer"
           disabled={isLoading}
         >
-          Generate Strategy
+          Generate Actions
         </button>
       </div>
       
@@ -132,43 +111,19 @@ export default function ActionsSection({ app, onUpdateStrategy, onUpdateActions,
         </div>
       )}
 
-      {/* Strategy Section */}
-      <div className="mb-6">
-        <div className="flex justify-between items-center mb-2">
-          <h3 className="text-md font-medium">7-Day Strategy</h3>
-        </div>
-        
-        {strategy ? (
-          <div className="bg-gray-50 p-4 rounded-md">
-            <p className="text-gray-700 whitespace-pre-wrap">{strategy}</p>
-          </div>
-        ) : (
-          <p className="text-gray-500 italic">
-            No strategy defined yet. Generate one to get started with focused growth actions.
-          </p>
-        )}
-      </div>
-      
       {/* Actions Section */}
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-md font-medium">Growth Actions</h3>
-          <div className="space-x-2">
-            <button 
-              onClick={() => setShowAddForm(true)}
-              className="btn-secondary cursor-pointer"
-              disabled={isLoading}
-            >
-              Add Action
-            </button>
-            <button 
-              onClick={() => setShowGenerator(true)}
-              className="btn-primary cursor-pointer"
-              disabled={isLoading}
-            >
-              Generate Next Action
-            </button>
-          </div>
+          <p className="text-gray-600">
+            Add specific, achievable actions to grow your app's user base or revenue.
+          </p>
+          <button 
+            onClick={() => setShowAddForm(true)}
+            className="btn-secondary cursor-pointer"
+            disabled={isLoading || showAddForm || showGenerator}
+          >
+            Add Manually
+          </button>
         </div>
         
         {showAddForm && (
@@ -185,9 +140,8 @@ export default function ActionsSection({ app, onUpdateStrategy, onUpdateActions,
           <div className="mb-4">
             <ActionGenerator 
               app={app}
-              onClose={() => setShowGenerator(false)}
-              onStrategyGenerated={handleStrategyUpdated}
-              onActionGenerated={handleActionGenerated}
+              onAddAction={handleAddAction}
+              onCancel={() => setShowGenerator(false)}
             />
           </div>
         )}

@@ -8,7 +8,6 @@ export const apps = pgTable('apps', {
   revenue: numeric('revenue', { precision: 10, scale: 2 }).default('0'),
   createdAt: timestamp('created_at').defaultNow(),
   userId: uuid('user_id').notNull(),
-  strategy: text('strategy'),
   actions: jsonb('actions').default([]),
   domain: text('domain'),
   isPublic: boolean('is_public').default(false)

@@ -1,17 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import * as Sentry from '@sentry/browser';
 import { supabase } from '@/supabaseClient';
 
 export default function ActionGenerator({ app, onAddAction, onCancel }) {
-  const [generatedAction, setGeneratedAction] = useState('');
+  const [generatedActions, setGeneratedActions] = useState([]);
   const [isGenerating, setIsGenerating] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   const [error, setError] = useState(null);
+  const [selectedActionIndex, setSelectedActionIndex] = useState(null);
 
-  const generateAction = async () => {
+  const generateActions = async () => {
     try {
       setIsGenerating(true);
       setError(null);
+      setSelectedActionIndex(null);
       
       // Get auth token
       const { data: { session } } = await supabase.auth.getSession();
@@ -33,32 +35,36 @@ export default function ActionGenerator({ app, onAddAction, onCancel }) {
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate action');
+        throw new Error(errorData.error || 'Failed to generate actions');
       }
       
       const data = await response.json();
-      setGeneratedAction(data.action);
+      setGeneratedActions(data.actions || []);
       setIsGenerating(false);
       
     } catch (error) {
-      console.error('Error generating action:', error);
+      console.error('Error generating actions:', error);
       Sentry.captureException(error);
-      setError('Failed to generate action. Please try again.');
+      setError('Failed to generate actions. Please try again.');
       setIsGenerating(false);
     }
   };
 
-  // Generate an action when the component mounts
-  React.useEffect(() => {
-    generateAction();
+  // Generate actions when the component mounts
+  useEffect(() => {
+    generateActions();
   }, []);
 
-  const handleAddAction = async () => {
-    if (!generatedAction) return;
+  const handleSelectAction = (index) => {
+    setSelectedActionIndex(index);
+  };
+
+  const handleAddSelectedAction = async () => {
+    if (selectedActionIndex === null || !generatedActions[selectedActionIndex]) return;
     
     setIsAdding(true);
     try {
-      await onAddAction(generatedAction);
+      await onAddAction(generatedActions[selectedActionIndex]);
     } catch (error) {
       console.error('Error adding action:', error);
       Sentry.captureException(error);
@@ -70,6 +76,8 @@ export default function ActionGenerator({ app, onAddAction, onCancel }) {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+      <h3 className="text-lg font-medium mb-4">AI-Generated Growth Actions</h3>
+      
       {error && (
         <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4">
           {error}
@@ -79,31 +87,43 @@ export default function ActionGenerator({ app, onAddAction, onCancel }) {
       {isGenerating ? (
         <div className="text-center py-4">
           <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-gray-600">Generating your next action...</p>
+          <p className="text-gray-600">Generating your next actions...</p>
         </div>
       ) : (
         <div>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              AI-Generated Next Action <span className="text-xs text-gray-500">(achievable within 1-2 days)</span>:
-            </label>
-            <div className="bg-indigo-50 border border-indigo-100 p-3 rounded-md">
-              <p className="text-gray-800">{generatedAction}</p>
+            <p className="text-sm text-gray-600 mb-3">
+              Select one of these actions that you'd like to add to your growth plan:
+            </p>
+            <div className="space-y-3">
+              {generatedActions.map((action, index) => (
+                <div 
+                  key={index}
+                  className={`p-3 rounded-md border-2 cursor-pointer ${
+                    selectedActionIndex === index 
+                      ? 'border-indigo-500 bg-indigo-50' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => handleSelectAction(index)}
+                >
+                  <p className="text-gray-800">{action}</p>
+                </div>
+              ))}
             </div>
           </div>
           
           <div className="flex justify-end space-x-3">
             <button
-              onClick={generateAction}
+              onClick={generateActions}
               className="btn-secondary cursor-pointer text-sm"
               disabled={isGenerating || isAdding}
             >
-              Generate Again
+              Generate More
             </button>
             <button
-              onClick={handleAddAction}
+              onClick={handleAddSelectedAction}
               className="btn-primary cursor-pointer text-sm"
-              disabled={isGenerating || isAdding}
+              disabled={isGenerating || isAdding || selectedActionIndex === null}
             >
               {isAdding ? (
                 <span className="flex items-center">
@@ -111,7 +131,7 @@ export default function ActionGenerator({ app, onAddAction, onCancel }) {
                   Adding...
                 </span>
               ) : (
-                'Add This Action'
+                'Add Selected Action'
               )}
             </button>
           </div>

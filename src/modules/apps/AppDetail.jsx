@@ -96,26 +96,6 @@ export default function AppDetail() {
     }
   };
 
-  const handleUpdateStrategy = async (strategy) => {
-    if (!app) return;
-    
-    try {
-      setUpdating(true);
-      const updatedApp = await updateApp(id, {
-        ...app,
-        strategy
-      });
-      setApp(updatedApp);
-      setError(null);
-    } catch (err) {
-      console.error('Error updating strategy:', err);
-      Sentry.captureException(err);
-      setError('Failed to update strategy. Please try again.');
-    } finally {
-      setUpdating(false);
-    }
-  };
-
   const handleUpdateActions = async (actions) => {
     if (!app) return;
     
@@ -271,7 +251,6 @@ export default function AppDetail() {
 
         <ActionsSection 
           app={app} 
-          onUpdateStrategy={handleUpdateStrategy} 
           onUpdateActions={handleUpdateActions}
           isLoading={updating}
         />
