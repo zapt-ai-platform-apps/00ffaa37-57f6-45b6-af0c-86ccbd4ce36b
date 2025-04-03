@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import ActionItem from './ActionItem';
 import ActionForm from './ActionForm';
+import ActionGenerator from './ActionGenerator';
 import { updateApp } from '@/modules/apps/api';
 import * as Sentry from '@sentry/browser';
 
@@ -8,6 +9,7 @@ export default function ActionsSection({ app, onUpdateApp }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [isAddingAction, setIsAddingAction] = useState(false);
+  const [isGeneratingAction, setIsGeneratingAction] = useState(false);
 
   const handleToggleAction = async (actionId) => {
     try {
@@ -56,6 +58,7 @@ export default function ActionsSection({ app, onUpdateApp }) {
       
       onUpdateApp(updatedApp);
       setIsAddingAction(false);
+      setIsGeneratingAction(false);
       setError(null);
     } catch (err) {
       console.error('Error adding action:', err);
@@ -93,13 +96,21 @@ export default function ActionsSection({ app, onUpdateApp }) {
     <div className="card">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-xl font-semibold">Action Plan</h2>
-        {!isAddingAction && (
-          <button 
-            onClick={() => setIsAddingAction(true)}
-            className="btn-primary text-sm"
-          >
-            Add Action
-          </button>
+        {!isAddingAction && !isGeneratingAction && (
+          <div className="flex space-x-2">
+            <button 
+              onClick={() => setIsGeneratingAction(true)}
+              className="btn-primary text-sm"
+            >
+              Generate Next Action
+            </button>
+            <button 
+              onClick={() => setIsAddingAction(true)}
+              className="btn-secondary text-sm"
+            >
+              Add Custom Action
+            </button>
+          </div>
         )}
       </div>
       
@@ -118,11 +129,21 @@ export default function ActionsSection({ app, onUpdateApp }) {
           />
         </div>
       )}
+
+      {isGeneratingAction && (
+        <div className="mb-6">
+          <ActionGenerator
+            app={app}
+            onAddAction={handleAddAction}
+            onCancel={() => setIsGeneratingAction(false)}
+          />
+        </div>
+      )}
       
-      {(!app.actions || app.actions.length === 0) && !isAddingAction ? (
+      {(!app.actions || app.actions.length === 0) && !isAddingAction && !isGeneratingAction ? (
         <div className="py-8 text-center text-gray-500">
           <p>No actions added yet.</p>
-          <p className="mt-2">Add actions to track your traction building progress.</p>
+          <p className="mt-2">Generate or add actions to track your traction building progress.</p>
         </div>
       ) : (
         <div className="space-y-3">

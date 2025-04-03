@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import Layout from '@/shared/components/Layout';
 import MetricsForm from '@/modules/metrics/MetricsForm';
-import StrategySection from '@/modules/strategy/StrategySection';
 import ActionsSection from '@/modules/actions/ActionsSection';
 import { getAppById, updateApp, deleteApp } from '@/modules/apps/api';
 import * as Sentry from '@sentry/browser';
@@ -200,17 +199,10 @@ export default function AppDetail() {
             />
           </div>
         ) : (
-          <>
-            <StrategySection 
-              app={app} 
-              onUpdateApp={(updatedApp) => setApp(updatedApp)} 
-            />
-            
-            <ActionsSection 
-              app={app} 
-              onUpdateApp={(updatedApp) => setApp(updatedApp)} 
-            />
-          </>
+          <ActionsSection 
+            app={app} 
+            onUpdateApp={(updatedApp) => setApp(updatedApp)} 
+          />
         )}
       </div>
     </Layout>
