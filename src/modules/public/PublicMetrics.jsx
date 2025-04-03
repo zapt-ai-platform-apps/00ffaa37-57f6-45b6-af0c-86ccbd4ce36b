@@ -1,16 +1,19 @@
 import React, { useMemo } from 'react';
 
-export default function PublicMetrics({ apps }) {
+export default function PublicMetrics({ apps = [] }) {
   const stats = useMemo(() => {
-    return apps.reduce(
+    // Ensure apps is always an array before reducing
+    const safeApps = Array.isArray(apps) ? apps : [];
+    
+    return safeApps.reduce(
       (acc, app) => {
         acc.totalUsers += app.userCount || 0;
-        acc.totalRevenue += app.revenue || 0;
+        acc.totalRevenue += Number(app.revenue) || 0;
         acc.completedActions += (app.actions || []).filter(a => a.completed).length;
         acc.totalActions += (app.actions || []).length;
         return acc;
       },
-      { totalApps: apps.length, totalUsers: 0, totalRevenue: 0, completedActions: 0, totalActions: 0 }
+      { totalApps: safeApps.length, totalUsers: 0, totalRevenue: 0, completedActions: 0, totalActions: 0 }
     );
   }, [apps]);
 

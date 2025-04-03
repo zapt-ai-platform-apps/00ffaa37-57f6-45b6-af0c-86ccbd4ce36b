@@ -23,12 +23,14 @@ export default function Dashboard() {
     try {
       setLoading(true);
       const appData = await getApps();
-      setApps(appData);
+      setApps(appData || []);
       setError(null);
     } catch (err) {
       console.error('Error fetching apps:', err);
       Sentry.captureException(err);
       setError('Failed to load apps. Please try again.');
+      // Ensure apps is set to an empty array on error
+      setApps([]);
     } finally {
       setLoading(false);
     }
@@ -58,7 +60,7 @@ export default function Dashboard() {
             <span className="text-sm text-gray-600">{user?.email}</span>
             <button 
               onClick={signOut} 
-              className="btn-secondary text-sm"
+              className="btn-secondary text-sm cursor-pointer"
             >
               Sign Out
             </button>
@@ -72,7 +74,7 @@ export default function Dashboard() {
             <h2 className="text-xl font-semibold">Your Apps</h2>
             <button 
               onClick={() => setShowAppForm(true)}
-              className="btn-primary"
+              className="btn-primary cursor-pointer"
             >
               Add New App
             </button>

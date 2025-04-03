@@ -5,17 +5,20 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 // Register ChartJS components
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-export default function TractionSummary({ apps }) {
+export default function TractionSummary({ apps = [] }) {
   const stats = useMemo(() => {
-    return apps.reduce(
+    // Ensure apps is always an array before reducing
+    const safeApps = Array.isArray(apps) ? apps : [];
+    
+    return safeApps.reduce(
       (acc, app) => {
         acc.totalUsers += app.userCount || 0;
-        acc.totalRevenue += app.revenue || 0;
+        acc.totalRevenue += Number(app.revenue) || 0;
         acc.completedActions += (app.actions || []).filter(a => a.completed).length;
         acc.pendingActions += (app.actions || []).filter(a => !a.completed).length;
         return acc;
       },
-      { totalApps: apps.length, totalUsers: 0, totalRevenue: 0, completedActions: 0, pendingActions: 0 }
+      { totalApps: safeApps.length, totalUsers: 0, totalRevenue: 0, completedActions: 0, pendingActions: 0 }
     );
   }, [apps]);
 

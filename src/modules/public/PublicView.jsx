@@ -17,12 +17,14 @@ const PublicView = () => {
         setLoading(true);
         const data = await getPublicApps();
         console.log('Fetched public apps:', data);
-        setApps(data);
+        setApps(data || []);
         setError(null);
       } catch (err) {
         console.error('Error fetching public apps:', err);
         setError('Failed to load apps. Please try again later.');
         Sentry.captureException(err);
+        // Ensure apps is set to an empty array on error
+        setApps([]);
       } finally {
         setLoading(false);
       }
@@ -34,9 +36,6 @@ const PublicView = () => {
   if (loading) {
     return <LoadingPage />;
   }
-
-  const totalUsers = apps.reduce((sum, app) => sum + (app.userCount || 0), 0);
-  const totalRevenue = apps.reduce((sum, app) => sum + Number(app.revenue || 0), 0);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -53,11 +52,7 @@ const PublicView = () => {
         </div>
       ) : (
         <>
-          <PublicMetrics 
-            totalApps={apps.length} 
-            totalUsers={totalUsers} 
-            totalRevenue={totalRevenue} 
-          />
+          <PublicMetrics apps={apps} />
           <PublicAppsList apps={apps} />
         </>
       )}
