@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getAppById, updateApp, deleteApp } from './api';
+import { getApp, updateApp, deleteApp } from './api';
 import Layout from '@/shared/components/Layout';
 import AppForm from './AppForm';
 import MetricsForm from '@/modules/metrics/MetricsForm';
@@ -27,7 +27,7 @@ export default function AppDetail() {
   const fetchAppData = async () => {
     try {
       setLoading(true);
-      const appData = await getAppById(id);
+      const appData = await getApp(id);
       setApp(appData);
       setError(null);
     } catch (err) {
