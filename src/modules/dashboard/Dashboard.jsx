@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import useAuth from '../auth/hooks/useAuth';
+import { supabase } from '@/supabaseClient';
 import AppList from '../apps/AppList';
 import AppForm from '../apps/AppForm';
 import Layout from '../../shared/components/Layout';
 import AdminTools from './AdminTools';
+import * as Sentry from '@sentry/browser';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
@@ -41,6 +43,7 @@ const Dashboard = () => {
       setApps(data);
     } catch (err) {
       console.error('Error fetching apps:', err);
+      Sentry.captureException(err);
       setError(err.message);
     } finally {
       setLoading(false);

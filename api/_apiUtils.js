@@ -51,20 +51,3 @@ export function getDbClient() {
     throw new Error('Database connection failed: ' + error.message);
   }
 }
-
-export async function verifyAppsTable(db) {
-  try {
-    const result = await db.execute(`
-      SELECT EXISTS (
-        SELECT FROM pg_tables
-        WHERE schemaname = 'public'
-        AND tablename = 'apps'
-      );
-    `);
-    return result[0]?.exists || false;
-  } catch (error) {
-    console.error('Error verifying apps table:', error);
-    Sentry.captureException(error);
-    return false;
-  }
-}
