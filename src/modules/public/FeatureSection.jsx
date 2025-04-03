@@ -4,7 +4,7 @@ import { IoBarChartSharp, IoBulbOutline, IoShareSocialOutline, IoRocketSharp } f
 const features = [
   {
     name: 'Track Key Metrics',
-    description: 'Monitor user counts, revenue, and other critical KPIs to understand your app's performance at a glance.',
+    description: "Monitor user counts, revenue, and other critical KPIs to understand your app's performance at a glance.",
     icon: IoBarChartSharp,
     color: 'from-blue-500 to-indigo-600'
   },
