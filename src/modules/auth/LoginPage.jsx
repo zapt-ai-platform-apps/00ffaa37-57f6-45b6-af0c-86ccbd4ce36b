@@ -2,8 +2,11 @@ import React from 'react';
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/supabaseClient';
+import useAuth from './hooks/useAuth';
 
 export default function LoginPage() {
+  const { authError } = useAuth();
+  
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -19,12 +22,21 @@ export default function LoginPage() {
           <p className="mt-2 text-center text-sm text-gray-600">
             Sign in with ZAPT
           </p>
+          <p className="mt-2 text-center text-sm text-red-600 font-medium">
+            Note: This app is restricted to david@mapt.events only.
+          </p>
           <p className="text-center mt-2">
             <a href="https://www.zapt.ai" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-500">
               Visit zapt.ai
             </a>
           </p>
         </div>
+        
+        {authError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <span className="block sm:inline">{authError}</span>
+          </div>
+        )}
         
         <div className="mt-8 card">
           <Auth

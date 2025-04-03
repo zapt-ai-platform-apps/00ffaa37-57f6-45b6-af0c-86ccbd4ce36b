@@ -1,101 +1,132 @@
-// Mock data for development
-let mockedApps = [
-  {
-    id: '1',
-    name: 'Productivity Tracker',
-    description: 'A simple app to track your daily productivity and habits',
-    userCount: 45,
-    revenue: 120,
-    createdAt: new Date().toISOString(),
-    strategy: 'Focus on content marketing with weekly articles about productivity',
-    actions: [
-      { id: '1', text: 'Create 3 blog posts about productivity tips', completed: true },
-      { id: '2', text: 'Share on 5 relevant Reddit communities', completed: true },
-      { id: '3', text: 'Launch 2-week Product Hunt campaign', completed: false },
-      { id: '4', text: 'Reach out to 10 productivity influencers', completed: false }
-    ]
-  },
-  {
-    id: '2',
-    name: 'Finance Calculator',
-    description: 'Calculate investments, loans, and savings with ease',
-    userCount: 67,
-    revenue: 230,
-    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
-    strategy: 'Partner with financial bloggers to promote the app',
-    actions: [
-      { id: '1', text: 'Create demo videos for 5 main features', completed: true },
-      { id: '2', text: 'Reach out to 15 financial bloggers', completed: true },
-      { id: '3', text: 'Offer affiliate program to partners', completed: false },
-      { id: '4', text: 'Create comparison landing page', completed: false }
-    ]
-  }
-];
+import * as Sentry from '@sentry/browser';
+import { supabase } from '@/supabaseClient';
 
-// In a real implementation, these would be API calls to a backend server
+// Helper function to get auth token
+async function getAuthToken() {
+  const { data: { session } } = await supabase.auth.getSession();
+  return session?.access_token;
+}
+
+// Function to handle API errors
+function handleApiError(error, operation) {
+  console.error(`Error during ${operation}:`, error);
+  Sentry.captureException(error);
+  throw error;
+}
+
 export const getApps = async () => {
-  // Simulate network request
-  await new Promise(resolve => setTimeout(resolve, 500));
-  return [...mockedApps];
+  try {
+    const token = await getAuthToken();
+    
+    const response = await fetch('/api/apps', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch apps');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error, 'fetching apps');
+  }
 };
 
 export const getAppById = async (id) => {
-  // Simulate network request
-  await new Promise(resolve => setTimeout(resolve, 300));
-  const app = mockedApps.find(app => app.id === id);
-  
-  if (!app) {
-    throw new Error('App not found');
+  try {
+    const token = await getAuthToken();
+    
+    const response = await fetch(`/api/app?id=${id}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch app');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error, 'fetching app');
   }
-  
-  return { ...app };
 };
 
 export const createApp = async (appData) => {
-  // Simulate network request
-  await new Promise(resolve => setTimeout(resolve, 800));
-  
-  const newApp = {
-    id: Date.now().toString(),
-    ...appData,
-    createdAt: new Date().toISOString(),
-    actions: []
-  };
-  
-  mockedApps.push(newApp);
-  return { ...newApp };
+  try {
+    const token = await getAuthToken();
+    
+    const response = await fetch('/api/apps', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(appData)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create app');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error, 'creating app');
+  }
 };
 
 export const updateApp = async (id, appData) => {
-  // Simulate network request
-  await new Promise(resolve => setTimeout(resolve, 600));
-  
-  const appIndex = mockedApps.findIndex(app => app.id === id);
-  
-  if (appIndex === -1) {
-    throw new Error('App not found');
+  try {
+    const token = await getAuthToken();
+    
+    const response = await fetch(`/api/app?id=${id}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(appData)
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update app');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error, 'updating app');
   }
-  
-  const updatedApp = {
-    ...mockedApps[appIndex],
-    ...appData,
-    id // Ensure ID doesn't change
-  };
-  
-  mockedApps[appIndex] = updatedApp;
-  return { ...updatedApp };
 };
 
 export const deleteApp = async (id) => {
-  // Simulate network request
-  await new Promise(resolve => setTimeout(resolve, 700));
-  
-  const appIndex = mockedApps.findIndex(app => app.id === id);
-  
-  if (appIndex === -1) {
-    throw new Error('App not found');
+  try {
+    const token = await getAuthToken();
+    
+    const response = await fetch(`/api/app?id=${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to delete app');
+    }
+    
+    return true;
+  } catch (error) {
+    return handleApiError(error, 'deleting app');
   }
-  
-  mockedApps = mockedApps.filter(app => app.id !== id);
-  return true;
 };
