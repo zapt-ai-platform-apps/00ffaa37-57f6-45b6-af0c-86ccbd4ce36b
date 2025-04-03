@@ -138,3 +138,27 @@ export function createValidator(schema) {
     }
   };
 }
+
+/**
+ * Safely clean object data for database updates by removing timestamp fields
+ * that could cause conversion issues
+ */
+export function cleanObjectForUpdate(data) {
+  if (!data) return {};
+  
+  const safeData = { ...data };
+  
+  // Remove timestamp fields that shouldn't be updated or could cause conversion issues
+  const fieldsToRemove = [
+    'createdAt', 'created_at', 'updatedAt', 'updated_at', 
+    'deletedAt', 'deleted_at', 'completedAt', 'completed_at'
+  ];
+  
+  for (const field of fieldsToRemove) {
+    if (field in safeData) {
+      delete safeData[field];
+    }
+  }
+  
+  return safeData;
+}

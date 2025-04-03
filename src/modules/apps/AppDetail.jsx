@@ -56,14 +56,16 @@ export default function AppDetail() {
     
     try {
       setUpdating(true);
-      // Merge with existing app data to avoid losing fields not in the form
-      // All apps are public by default
-      const updatedApp = await updateApp(id, {
+      console.log('Updating app with data:', updatedData);
+      
+      // Only send the fields that need to be updated, rather than the entire app object
+      // This helps avoid timestamp conversion issues
+      const updatedApp = await updateApp(id, updatedData);
+      
+      setApp({
         ...app,
-        ...updatedData,
-        isPublic: true
+        ...updatedApp
       });
-      setApp(updatedApp);
       setShowEditForm(false);
       setError(null);
     } catch (err) {
@@ -80,12 +82,16 @@ export default function AppDetail() {
     
     try {
       setUpdating(true);
+      // Only send the metrics fields
       const updatedApp = await updateApp(id, {
-        ...app,
         userCount: parseInt(metrics.userCount),
         revenue: parseFloat(metrics.revenue)
       });
-      setApp(updatedApp);
+      
+      setApp({
+        ...app,
+        ...updatedApp
+      });
       setError(null);
     } catch (err) {
       console.error('Error updating metrics:', err);
@@ -101,11 +107,15 @@ export default function AppDetail() {
     
     try {
       setUpdating(true);
+      // Only send the actions field
       const updatedApp = await updateApp(id, {
-        ...app,
         actions
       });
-      setApp(updatedApp);
+      
+      setApp({
+        ...app,
+        ...updatedApp
+      });
       setError(null);
     } catch (err) {
       console.error('Error updating actions:', err);

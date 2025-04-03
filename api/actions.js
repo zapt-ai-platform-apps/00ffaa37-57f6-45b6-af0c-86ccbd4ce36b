@@ -1,10 +1,9 @@
 import { initializeZapt } from '@zapt/zapt-js';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { apps, actions } from '../drizzle/schema.js';
+import { actions, apps } from '../drizzle/schema.js';
 import { eq, and } from 'drizzle-orm';
-import { authenticateUser } from './_apiUtils.js';
-import * as Sentry from '@sentry/node';
+import { authenticateUser, cleanObjectForUpdate } from './_apiUtils.js';
 
 export default async function handler(req, res) {
   console.log('API: actions endpoint called');
@@ -15,7 +14,7 @@ export default async function handler(req, res) {
     const db = drizzle(client);
     
     if (req.method === 'POST') {
-      console.log('POST request to create a new action');
+      console.log('POST request to create action');
       
       const { appId, text } = req.body;
       
@@ -23,75 +22,70 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'App ID and text are required' });
       }
       
-      // Check if user owns the app
-      const app = await db.select().from(apps).where(eq(apps.id, appId));
+      // Verify user owns the app
+      const appData = await db.select().from(apps).where(eq(apps.id, appId));
       
-      if (app.length === 0) {
+      if (appData.length === 0) {
         return res.status(404).json({ error: 'App not found' });
       }
       
-      if (app[0].userId !== user.id) {
+      if (appData[0].userId !== user.id) {
         return res.status(403).json({ error: 'Unauthorized access to app' });
       }
       
-      const newAction = {
-        appId,
-        text,
-        completed: false,
-        createdAt: new Date()
-      };
-      
-      const result = await db.insert(actions).values(newAction).returning();
+      // Create new action
+      const result = await db.insert(actions)
+        .values({
+          appId,
+          text,
+          completed: false
+        })
+        .returning();
       
       res.status(201).json(result[0]);
     } else if (req.method === 'PUT') {
-      console.log('PUT request to update an action');
+      console.log('PUT request to update action');
       
-      const { id, appId, text, completed } = req.body;
+      const { id, appId, ...updateData } = req.body;
       
       if (!id || !appId) {
         return res.status(400).json({ error: 'Action ID and App ID are required' });
       }
       
-      // Check if user owns the app
-      const app = await db.select().from(apps).where(eq(apps.id, appId));
+      // Verify user owns the app
+      const appData = await db.select().from(apps).where(eq(apps.id, appId));
       
-      if (app.length === 0) {
+      if (appData.length === 0) {
         return res.status(404).json({ error: 'App not found' });
       }
       
-      if (app[0].userId !== user.id) {
+      if (appData[0].userId !== user.id) {
         return res.status(403).json({ error: 'Unauthorized access to app' });
       }
       
-      // Check if action exists for this app
-      const action = await db.select()
-        .from(actions)
-        .where(and(eq(actions.id, id), eq(actions.appId, appId)));
+      // Ensure we clean any timestamp fields to prevent conversion issues
+      const safeUpdateData = cleanObjectForUpdate(updateData);
       
-      if (action.length === 0) {
-        return res.status(404).json({ error: 'Action not found' });
+      // Special handling for 'completed' field - if being marked as completed, set completedAt
+      if (safeUpdateData.completed === true) {
+        safeUpdateData.completedAt = new Date();
+      } else if (safeUpdateData.completed === false) {
+        safeUpdateData.completedAt = null;
       }
       
-      const updateData = {};
-      
-      if (text !== undefined) {
-        updateData.text = text;
-      }
-      
-      if (completed !== undefined) {
-        updateData.completed = completed;
-        updateData.completedAt = completed ? new Date() : null;
-      }
-      
+      // Update action
       const result = await db.update(actions)
-        .set(updateData)
+        .set(safeUpdateData)
         .where(and(eq(actions.id, id), eq(actions.appId, appId)))
         .returning();
       
+      if (result.length === 0) {
+        return res.status(404).json({ error: 'Action not found' });
+      }
+      
       res.status(200).json(result[0]);
     } else if (req.method === 'DELETE') {
-      console.log('DELETE request to remove an action');
+      console.log('DELETE request to remove action');
       
       const { id, appId } = req.query;
       
@@ -99,20 +93,25 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Action ID and App ID are required' });
       }
       
-      // Check if user owns the app
-      const app = await db.select().from(apps).where(eq(apps.id, appId));
+      // Verify user owns the app
+      const appData = await db.select().from(apps).where(eq(apps.id, appId));
       
-      if (app.length === 0) {
+      if (appData.length === 0) {
         return res.status(404).json({ error: 'App not found' });
       }
       
-      if (app[0].userId !== user.id) {
+      if (appData[0].userId !== user.id) {
         return res.status(403).json({ error: 'Unauthorized access to app' });
       }
       
-      // Delete the action
-      await db.delete(actions)
-        .where(and(eq(actions.id, id), eq(actions.appId, appId)));
+      // Delete action
+      const result = await db.delete(actions)
+        .where(and(eq(actions.id, id), eq(actions.appId, appId)))
+        .returning();
+      
+      if (result.length === 0) {
+        return res.status(404).json({ error: 'Action not found' });
+      }
       
       res.status(200).json({ message: 'Action deleted successfully' });
     } else {
@@ -120,7 +119,6 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error('Error in actions API:', error);
-    Sentry.captureException(error);
     res.status(500).json({ error: error.message });
   }
 }

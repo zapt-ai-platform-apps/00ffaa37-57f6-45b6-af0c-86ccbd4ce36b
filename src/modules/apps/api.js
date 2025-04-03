@@ -1,6 +1,27 @@
 import { supabase } from '@/supabaseClient';
 import * as Sentry from '@sentry/browser';
 
+// Helper to clean objects before sending to API
+function cleanObjectForUpdate(data) {
+  if (!data) return {};
+  
+  const safeData = { ...data };
+  
+  // Remove timestamp fields that could cause conversion issues
+  const fieldsToRemove = [
+    'createdAt', 'created_at', 'updatedAt', 'updated_at', 
+    'deletedAt', 'deleted_at', 'completedAt', 'completed_at'
+  ];
+  
+  for (const field of fieldsToRemove) {
+    if (field in safeData) {
+      delete safeData[field];
+    }
+  }
+  
+  return safeData;
+}
+
 // Get all apps for the authenticated user
 export async function getApps() {
   try {
@@ -85,13 +106,17 @@ export async function updateApp(id, appData) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Not authenticated');
 
+    // Clean the object to remove any timestamp fields before sending to API
+    const safeData = cleanObjectForUpdate(appData);
+    console.log('Sending update with safe data:', safeData);
+
     const response = await fetch(`/api/app?id=${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session.access_token}`
       },
-      body: JSON.stringify(appData)
+      body: JSON.stringify(safeData)
     });
 
     if (!response.ok) {
@@ -167,13 +192,16 @@ export async function updateAction(id, appId, updates) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Not authenticated');
 
+    // Clean the updates object
+    const safeUpdates = cleanObjectForUpdate(updates);
+
     const response = await fetch('/api/actions', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${session.access_token}`
       },
-      body: JSON.stringify({ id, appId, ...updates })
+      body: JSON.stringify({ id, appId, ...safeUpdates })
     });
 
     if (!response.ok) {

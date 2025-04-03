@@ -50,9 +50,12 @@ export default async function handler(req, res) {
         return res.status(403).json({ error: 'Unauthorized access to app' });
       }
       
+      // Extract safe fields for update, removing timestamps to avoid conversion issues
+      const { createdAt, created_at, ...safeUpdateData } = req.body;
+      
       // Always enforce isPublic as true
       const updatedApp = {
-        ...req.body,
+        ...safeUpdateData,
         isPublic: true
       };
       
