@@ -13,7 +13,6 @@ import * as Sentry from '@sentry/browser';
 const PublicView = () => {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchApps = async () => {
@@ -39,12 +38,10 @@ const PublicView = () => {
         });
         
         setApps(processedApps || []);
-        setError(null);
       } catch (err) {
         console.error('Error fetching public apps:', err);
-        setError('Failed to load apps. Please try again later.');
         Sentry.captureException(err);
-        // Ensure apps is set to an empty array on error
+        // Use empty array for apps on error
         setApps([]);
       } finally {
         setLoading(false);
@@ -63,28 +60,14 @@ const PublicView = () => {
       <PublicHeader />
       <Hero />
       
-      {error ? (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="rounded-md bg-red-50 p-4 my-6">
-            <div className="flex">
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-red-800">Error</h3>
-                <div className="text-sm text-red-700">{error}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            {/* Using hardcoded metrics for the landing page */}
-            <PublicMetrics isLandingPage={true} />
-            <FeatureSection />
-            <PublicAppsList apps={apps} />
-            <TestimonialSection />
-          </div>
-        </>
-      )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {/* Always use hardcoded metrics for the landing page */}
+        <PublicMetrics isLandingPage={true} />
+        <FeatureSection />
+        <PublicAppsList apps={apps} />
+        <TestimonialSection />
+      </div>
+      
       <FooterSection />
     </div>
   );
