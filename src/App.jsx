@@ -6,6 +6,7 @@ import PublicRoute from './modules/auth/PublicRoute';
 import LoginPage from './modules/auth/LoginPage';
 import Dashboard from './modules/dashboard/Dashboard';
 import PublicView from './modules/public/PublicView';
+import PublicDashboard from './modules/public/PublicDashboard';
 import AppDetail from './modules/apps/AppDetail';
 import ZaptBadge from './shared/components/ZaptBadge';
 
@@ -15,10 +16,16 @@ export default function App() {
       <Router>
         <AuthProvider>
           <Routes>
+            {/* Public routes */}
             <Route path="/" element={<PublicRoute element={<PublicView />} />} />
             <Route path="/login" element={<PublicRoute element={<LoginPage />} restricted={true} />} />
+            <Route path="/public/:userId" element={<PublicDashboard />} />
+            
+            {/* Protected routes */}
             <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
             <Route path="/apps/:id" element={<ProtectedRoute element={<AppDetail />} />} />
+            
+            {/* Fallback route */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
           <ZaptBadge />

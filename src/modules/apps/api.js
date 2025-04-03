@@ -57,6 +57,46 @@ export const getPublicApps = async () => {
   }
 };
 
+export const getUserPublicApps = async (userId) => {
+  try {
+    const response = await fetch(`/api/public-apps?userId=${userId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch user public apps');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error, 'fetching user public apps');
+  }
+};
+
+export const getUserPublicDashboard = async (userId) => {
+  try {
+    const response = await fetch(`/api/public-user?userId=${userId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch user public dashboard');
+    }
+    
+    return await response.json();
+  } catch (error) {
+    return handleApiError(error, 'fetching user public dashboard');
+  }
+};
+
 export const getPublicAppById = async (id) => {
   try {
     const response = await fetch(`/api/public-app?id=${id}`, {

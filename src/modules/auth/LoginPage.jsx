@@ -5,7 +5,7 @@ import { supabase } from '@/supabaseClient';
 import useAuth from './hooks/useAuth';
 
 export default function LoginPage() {
-  const { authError, isSigningOut } = useAuth();
+  const { authError } = useAuth();
   
   useEffect(() => {
     // Log the auth error status to help with debugging
@@ -38,7 +38,7 @@ export default function LoginPage() {
         
         {authError && (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-            <strong className="font-bold">Access Denied: </strong>
+            <strong className="font-bold">Error: </strong>
             <span className="block sm:inline">{authError}</span>
           </div>
         )}

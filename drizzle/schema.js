@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, integer, numeric, timestamp, jsonb } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, text, integer, numeric, timestamp, jsonb, boolean } from 'drizzle-orm/pg-core';
 
 export const apps = pgTable('apps', {
   id: uuid('id').primaryKey().defaultRandom(),
@@ -10,5 +10,6 @@ export const apps = pgTable('apps', {
   userId: uuid('user_id').notNull(),
   strategy: text('strategy'),
   actions: jsonb('actions').default([]),
-  domain: text('domain')
+  domain: text('domain'),
+  isPublic: boolean('is_public').default(false)
 });

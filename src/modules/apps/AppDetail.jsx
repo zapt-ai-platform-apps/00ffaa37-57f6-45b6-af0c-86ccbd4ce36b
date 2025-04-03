@@ -1,34 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import { getAppById, updateApp, deleteApp } from './api';
 import Layout from '@/shared/components/Layout';
+import AppForm from './AppForm';
 import MetricsForm from '@/modules/metrics/MetricsForm';
 import ActionsSection from '@/modules/actions/ActionsSection';
-import AppForm from '@/modules/apps/AppForm';
-import { getAppById, updateApp, deleteApp } from '@/modules/apps/api';
 import * as Sentry from '@sentry/browser';
+import useAuth from '@/modules/auth/hooks/useAuth';
 
 export default function AppDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [app, setApp] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
   const [error, setError] = useState(null);
-  const [isEditingMetrics, setIsEditingMetrics] = useState(false);
-  const [isEditingAppDetails, setIsEditingAppDetails] = useState(false);
-  const [deleteConfirmation, setDeleteConfirmation] = useState(false);
+  const [showEditForm, setShowEditForm] = useState(false);
+  const [showShareUrl, setShowShareUrl] = useState(false);
+  const [shareUrlCopied, setShareUrlCopied] = useState(false);
 
   useEffect(() => {
-    fetchApp();
+    fetchAppData();
   }, [id]);
 
-  const fetchApp = async () => {
+  const fetchAppData = async () => {
     try {
       setLoading(true);
       const appData = await getAppById(id);
       setApp(appData);
       setError(null);
     } catch (err) {
-      console.error('Error fetching app:', err);
+      console.error('Error fetching app data:', err);
       Sentry.captureException(err);
       setError('Failed to load app details. Please try again.');
     } finally {
@@ -36,71 +39,143 @@ export default function AppDetail() {
     }
   };
 
-  const handleMetricsUpdate = async (metricsData) => {
-    if (!app) return;
-    
+  const handleUpdateApp = async (updatedData) => {
     try {
-      setLoading(true);
-      const updatedApp = await updateApp(app.id, {
+      setUpdating(true);
+      // Merge with existing app data to avoid losing fields not in the form
+      const updatedApp = await updateApp(id, {
         ...app,
-        userCount: metricsData.userCount,
-        revenue: metricsData.revenue
+        ...updatedData
       });
       setApp(updatedApp);
-      setIsEditingMetrics(false);
+      setShowEditForm(false);
+      setError(null);
+    } catch (err) {
+      console.error('Error updating app:', err);
+      Sentry.captureException(err);
+      setError('Failed to update app. Please try again.');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleUpdateMetrics = async (metrics) => {
+    try {
+      setUpdating(true);
+      const updatedApp = await updateApp(id, {
+        ...app,
+        userCount: parseInt(metrics.userCount),
+        revenue: parseFloat(metrics.revenue)
+      });
+      setApp(updatedApp);
+      setError(null);
     } catch (err) {
       console.error('Error updating metrics:', err);
       Sentry.captureException(err);
       setError('Failed to update metrics. Please try again.');
     } finally {
-      setLoading(false);
+      setUpdating(false);
     }
   };
-  
-  const handleAppDetailsUpdate = async (appData) => {
-    if (!app) return;
-    
+
+  const handleUpdateStrategy = async (strategy) => {
     try {
-      setLoading(true);
-      const updatedApp = await updateApp(app.id, {
+      setUpdating(true);
+      const updatedApp = await updateApp(id, {
         ...app,
-        name: appData.name,
-        description: appData.description,
-        domain: appData.domain
+        strategy
       });
       setApp(updatedApp);
-      setIsEditingAppDetails(false);
+      setError(null);
     } catch (err) {
-      console.error('Error updating app details:', err);
+      console.error('Error updating strategy:', err);
       Sentry.captureException(err);
-      setError('Failed to update app details. Please try again.');
+      setError('Failed to update strategy. Please try again.');
     } finally {
-      setLoading(false);
+      setUpdating(false);
+    }
+  };
+
+  const handleUpdateActions = async (actions) => {
+    try {
+      setUpdating(true);
+      const updatedApp = await updateApp(id, {
+        ...app,
+        actions
+      });
+      setApp(updatedApp);
+      setError(null);
+    } catch (err) {
+      console.error('Error updating actions:', err);
+      Sentry.captureException(err);
+      setError('Failed to update actions. Please try again.');
+    } finally {
+      setUpdating(false);
     }
   };
 
   const handleDeleteApp = async () => {
+    if (!window.confirm('Are you sure you want to delete this app? This action cannot be undone.')) {
+      return;
+    }
+    
     try {
-      setLoading(true);
-      await deleteApp(app.id);
+      setUpdating(true);
+      await deleteApp(id);
       navigate('/dashboard');
     } catch (err) {
       console.error('Error deleting app:', err);
       Sentry.captureException(err);
       setError('Failed to delete app. Please try again.');
-    } finally {
-      setLoading(false);
-      setDeleteConfirmation(false);
+      setUpdating(false);
     }
   };
 
-  if (loading && !app) {
+  const toggleAppPublic = async () => {
+    try {
+      setUpdating(true);
+      const updatedApp = await updateApp(id, {
+        ...app,
+        isPublic: !app.isPublic
+      });
+      setApp(updatedApp);
+      setError(null);
+    } catch (err) {
+      console.error('Error updating public status:', err);
+      Sentry.captureException(err);
+      setError('Failed to update app visibility. Please try again.');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const getPublicShareUrl = () => {
+    // Create a URL for the user's public dashboard
+    return `${window.location.origin}/public/${user.id}`;
+  };
+
+  const copyShareUrl = () => {
+    const url = getPublicShareUrl();
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        setShareUrlCopied(true);
+        setTimeout(() => setShareUrlCopied(false), 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy URL: ', err);
+        Sentry.captureException(err);
+      });
+  };
+
+  if (loading) {
     return (
       <Layout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="card p-8 text-center">
-            <div className="w-12 h-12 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-500">Loading app details...</p>
+          <div className="animate-pulse space-y-4">
+            <div className="h-10 bg-gray-200 rounded w-1/4"></div>
+            <div className="h-4 bg-gray-200 rounded w-full"></div>
+            <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+            <div className="h-48 bg-gray-200 rounded"></div>
           </div>
         </div>
       </Layout>
@@ -111,12 +186,15 @@ export default function AppDetail() {
     return (
       <Layout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="bg-red-100 text-red-700 p-4 rounded-md mb-4">
+          <div className="bg-red-100 text-red-700 p-4 rounded-md">
             {error}
           </div>
-          <Link to="/dashboard" className="btn-secondary">
-            Back to Dashboard
-          </Link>
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="mt-4 btn-primary cursor-pointer"
+          >
+            Return to Dashboard
+          </button>
         </div>
       </Layout>
     );
@@ -126,12 +204,13 @@ export default function AppDetail() {
     return (
       <Layout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="card p-8 text-center">
-            <p className="text-gray-500 mb-4">App not found.</p>
-            <Link to="/dashboard" className="btn-secondary">
-              Back to Dashboard
-            </Link>
-          </div>
+          <p>App not found.</p>
+          <button 
+            onClick={() => navigate('/dashboard')}
+            className="mt-4 btn-primary cursor-pointer"
+          >
+            Return to Dashboard
+          </button>
         </div>
       </Layout>
     );
@@ -140,129 +219,132 @@ export default function AppDetail() {
   return (
     <Layout>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6">
           <div>
-            <Link to="/dashboard" className="text-indigo-600 hover:text-indigo-700 flex items-center">
-              ← Back to Dashboard
-            </Link>
-            <h1 className="text-2xl font-bold mt-2">{app.name}</h1>
+            <div className="flex items-center mb-2">
+              <h1 className="text-2xl font-bold text-gray-900">{app.name}</h1>
+              {app.domain && (
+                <a 
+                  href={app.domain.startsWith('http') ? app.domain : `https://${app.domain}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="ml-2 text-indigo-600 hover:text-indigo-700"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
+                </a>
+              )}
+            </div>
             <p className="text-gray-600">{app.description}</p>
-            {app.domain && (
-              <p className="text-sm text-gray-500 mt-1">
-                Domain: <a href={app.domain.startsWith('http') ? app.domain : `https://${app.domain}`} 
-                       target="_blank" 
-                       rel="noopener noreferrer"
-                       className="text-indigo-600 hover:text-indigo-800">{app.domain}</a>
-              </p>
-            )}
           </div>
-          
-          <div className="flex items-center space-x-3">
-            {!isEditingAppDetails && !isEditingMetrics && (
-              <button 
-                onClick={() => setIsEditingAppDetails(true)}
-                className="btn-secondary cursor-pointer"
-              >
-                Edit App Details
-              </button>
-            )}
-            
-            {!isEditingAppDetails && (
-              <button 
-                onClick={() => setIsEditingMetrics(!isEditingMetrics)}
-                className="btn-secondary cursor-pointer"
-              >
-                {isEditingMetrics ? 'Cancel Edit' : 'Edit Metrics'}
-              </button>
-            )}
-            
-            {!isEditingAppDetails && !isEditingMetrics && (
-              <button 
-                onClick={() => setDeleteConfirmation(true)}
-                className="btn-danger cursor-pointer"
-              >
-                Delete App
-              </button>
-            )}
+          <div className="mt-4 sm:mt-0 flex flex-wrap gap-2">
+            <button 
+              onClick={() => setShowEditForm(true)}
+              className="btn-secondary cursor-pointer"
+              disabled={updating}
+            >
+              Edit App
+            </button>
+            <button 
+              onClick={handleDeleteApp}
+              className="btn-danger cursor-pointer"
+              disabled={updating}
+            >
+              Delete
+            </button>
           </div>
         </div>
 
-        {deleteConfirmation && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white p-6 rounded-lg shadow-xl max-w-md w-full">
-              <h3 className="text-xl font-bold mb-4">Confirm Deletion</h3>
-              <p className="mb-6">Are you sure you want to delete {app.name}? This action cannot be undone.</p>
-              <div className="flex justify-end space-x-3">
-                <button 
-                  onClick={() => setDeleteConfirmation(false)}
-                  className="btn-secondary cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleDeleteApp}
-                  className="btn-danger cursor-pointer"
-                  disabled={loading}
-                >
-                  {loading ? 'Deleting...' : 'Delete App'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {isEditingAppDetails ? (
-          <div className="card mb-8">
-            <h2 className="text-xl font-semibold mb-4">Edit App Details</h2>
+        {showEditForm && (
+          <div className="mb-6 card">
+            <h2 className="text-lg font-semibold mb-4">Edit App Details</h2>
             <AppForm 
-              initialData={app} 
-              onSubmit={handleAppDetailsUpdate} 
-              onCancel={() => setIsEditingAppDetails(false)}
-              isLoading={loading}
-              isEditing={true}
+              app={app} 
+              onSubmit={handleUpdateApp} 
+              onCancel={() => setShowEditForm(false)}
+              isLoading={updating}
             />
           </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              <div className="card">
-                <h3 className="text-lg font-semibold mb-3">Users</h3>
-                <p className="text-3xl font-bold">{app.userCount || 0}</p>
+        )}
+
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Public Dashboard</h2>
+            
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="togglePublic"
+                  checked={app.isPublic}
+                  onChange={toggleAppPublic}
+                  disabled={updating}
+                  className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded cursor-pointer"
+                />
+                <label htmlFor="togglePublic" className="ml-2 text-sm font-medium text-gray-700">
+                  Make this app public
+                </label>
               </div>
               
-              <div className="card">
-                <h3 className="text-lg font-semibold mb-3">Revenue</h3>
-                <p className="text-3xl font-bold">${app.revenue || 0}</p>
-              </div>
+              <button 
+                onClick={() => setShowShareUrl(!showShareUrl)}
+                className="btn-secondary cursor-pointer"
+                disabled={updating}
+              >
+                Share Dashboard
+              </button>
+            </div>
+          </div>
+          
+          {showShareUrl && (
+            <div className="card mb-4">
+              <h3 className="text-lg font-medium mb-2">Your Public Dashboard URL</h3>
+              <p className="mb-2 text-sm text-gray-600">
+                Share this link with others to show your app's progress.
+                <br />
+                Only apps marked as public will be visible to others.
+              </p>
               
-              <div className="card">
-                <h3 className="text-lg font-semibold mb-3">Actions</h3>
-                <p className="text-3xl font-bold">
-                  <span className="text-green-600">{(app.actions || []).filter(a => a.completed).length}</span>
-                  {" / "}
-                  <span>{(app.actions || []).length}</span>
-                </p>
+              <div className="flex items-center">
+                <input
+                  type="text"
+                  value={getPublicShareUrl()}
+                  readOnly
+                  className="input border-gray-300 flex-grow"
+                />
+                <button
+                  onClick={copyShareUrl}
+                  className="ml-2 btn-primary cursor-pointer"
+                >
+                  {shareUrlCopied ? 'Copied!' : 'Copy'}
+                </button>
               </div>
             </div>
-            
-            {isEditingMetrics ? (
-              <div className="card mb-8">
-                <h2 className="text-xl font-semibold mb-4">Update Metrics</h2>
-                <MetricsForm 
-                  initialData={app} 
-                  onSubmit={handleMetricsUpdate} 
-                  onCancel={() => setIsEditingMetrics(false)}
-                  isLoading={loading}
-                />
-              </div>
-            ) : (
-              <ActionsSection 
-                app={app} 
-                onUpdateApp={(updatedApp) => setApp(updatedApp)} 
-              />
-            )}
-          </>
-        )}
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <MetricsForm 
+            app={app} 
+            onSubmit={handleUpdateMetrics}
+            isLoading={updating}
+          />
+
+          <div className="card md:col-span-2">
+            <h2 className="text-lg font-semibold mb-4">App Growth</h2>
+            <div className="text-center py-4 text-gray-500">
+              Charts coming soon...
+            </div>
+          </div>
+        </div>
+
+        <ActionsSection 
+          app={app} 
+          onUpdateStrategy={handleUpdateStrategy} 
+          onUpdateActions={handleUpdateActions}
+          isLoading={updating}
+        />
       </div>
     </Layout>
   );

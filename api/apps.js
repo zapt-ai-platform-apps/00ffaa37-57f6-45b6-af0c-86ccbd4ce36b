@@ -28,7 +28,8 @@ export default async function handler(req, res) {
         userId: user.id,
         strategy: appData.strategy || null,
         actions: appData.actions || [],
-        domain: appData.domain || null
+        domain: appData.domain || null,
+        isPublic: appData.isPublic || false
       }).returning();
       
       return res.status(201).json(newApp);

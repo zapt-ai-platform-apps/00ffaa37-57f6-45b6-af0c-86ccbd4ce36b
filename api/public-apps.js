@@ -1,17 +1,19 @@
 import { apps } from '../drizzle/schema.js';
 import { getDbClient } from './_apiUtils.js';
+import { eq } from 'drizzle-orm';
 import * as Sentry from '@sentry/node';
 
 export default async function handler(req, res) {
   try {
-    // All GET request should work without authentication
     const db = getDbClient();
     
     // GET request to fetch all public apps
     if (req.method === 'GET') {
-      console.log('Fetching all public apps');
+      const { userId } = req.query;
       
-      const appsList = await db.select({
+      console.log('Fetching public apps' + (userId ? ` for user: ${userId}` : ''));
+      
+      let query = db.select({
         id: apps.id,
         name: apps.name,
         description: apps.description,
@@ -20,9 +22,19 @@ export default async function handler(req, res) {
         createdAt: apps.createdAt,
         domain: apps.domain,
         strategy: apps.strategy,
-        actions: apps.actions
+        actions: apps.actions,
+        userId: apps.userId
       }).from(apps);
       
+      // If userId is provided, fetch only that user's public apps
+      if (userId) {
+        query = query.where(eq(apps.userId, userId));
+      } else {
+        // Otherwise fetch all apps that are marked as public
+        query = query.where(eq(apps.isPublic, true));
+      }
+      
+      const appsList = await query;
       return res.status(200).json(appsList);
     }
 

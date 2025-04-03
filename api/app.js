@@ -43,7 +43,8 @@ export default async function handler(req, res) {
           revenue: appData.revenue,
           strategy: appData.strategy,
           actions: appData.actions,
-          domain: appData.domain
+          domain: appData.domain,
+          isPublic: appData.isPublic !== undefined ? appData.isPublic : false
         })
         .where(and(eq(apps.id, id), eq(apps.userId, user.id)))
         .returning();

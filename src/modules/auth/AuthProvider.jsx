@@ -7,23 +7,11 @@ import { useNavigate } from 'react-router-dom';
 
 export const AuthContext = createContext(null);
 
-// Authorized emails list - remove zapt.ai@gmail.com from here
-const AUTHORIZED_EMAILS = [
-  'david@mapt.events',
-  // Add other authorized emails here
-];
-
-// Explicitly blocked emails
-const BLOCKED_EMAILS = [
-  'zapt.ai@gmail.com',
-];
-
 export default function AuthProvider({ children }) {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hasRecordedLogin, setHasRecordedLogin] = useState(false);
   const [authError, setAuthError] = useState(null);
-  const [isSigningOut, setIsSigningOut] = useState(false);
   const hasSessionRef = useRef(false);
   const navigate = useNavigate();
   
@@ -31,52 +19,6 @@ export default function AuthProvider({ children }) {
   const updateSession = (newSession) => {
     setSession(newSession);
     hasSessionRef.current = newSession !== null;
-  };
-
-  // Function to check if user has permission
-  const checkUserPermission = (user) => {
-    if (!user || !user.email) return false;
-    
-    const email = user.email.toLowerCase();
-    
-    // First check if email is explicitly blocked
-    if (BLOCKED_EMAILS.includes(email)) {
-      return false;
-    }
-    
-    // Then check if email is in the authorized list
-    return AUTHORIZED_EMAILS.includes(email);
-  };
-  
-  // Handle unauthorized user
-  const handleUnauthorizedUser = async (user) => {
-    console.log('Unauthorized access attempt:', user.email);
-    
-    // Set auth error message
-    let errorMessage = 'You do not have permission to access this application.';
-    if (BLOCKED_EMAILS.includes(user.email.toLowerCase())) {
-      errorMessage = 'This email address has been blocked from accessing this application.';
-    }
-    
-    setAuthError(errorMessage);
-    setIsSigningOut(true);
-    
-    // Redirect to login page to show the error
-    navigate('/login');
-    
-    // Sign out after a longer delay to ensure error message is seen
-    setTimeout(async () => {
-      try {
-        await supabase.auth.signOut();
-        // Don't clear the auth error immediately after sign out
-        // We'll keep it visible on the login page
-      } catch (error) {
-        console.error('Error signing out unauthorized user:', error);
-        Sentry.captureException(error);
-      } finally {
-        setIsSigningOut(false);
-      }
-    }, 10000); // Increased to 10 seconds to ensure users see the message
   };
   
   useEffect(() => {
@@ -89,14 +31,8 @@ export default function AuthProvider({ children }) {
         
         // Set initial session
         if (data.session) {
-          // Check if user has permission
-          if (checkUserPermission(data.session.user)) {
-            updateSession(data.session);
-            hasSessionRef.current = true;
-          } else {
-            // Handle unauthorized user
-            handleUnauthorizedUser(data.session.user);
-          }
+          updateSession(data.session);
+          hasSessionRef.current = true;
         }
         setLoading(false);
       } catch (error) {
@@ -112,21 +48,13 @@ export default function AuthProvider({ children }) {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, newSession) => {
       console.log('Auth event:', event, 'Has session:', hasSessionRef.current);
       
-      // For SIGNED_IN, handle authorization
+      // For SIGNED_IN, only update session if we don't have one
       if (event === 'SIGNED_IN') {
         if (!hasSessionRef.current) {
-          const user = newSession?.user;
-          
-          // Check if user has permission
-          if (user && checkUserPermission(user)) {
-            updateSession(newSession);
-            if (user.email) {
-              eventBus.publish(events.USER_SIGNED_IN, { user });
-              setHasRecordedLogin(false);
-            }
-          } else if (user) {
-            // Handle unauthorized user
-            handleUnauthorizedUser(user);
+          updateSession(newSession);
+          if (newSession?.user?.email) {
+            eventBus.publish(events.USER_SIGNED_IN, { user: newSession.user });
+            setHasRecordedLogin(false);
           }
         } else {
           console.log('Already have session, ignoring SIGNED_IN event');
@@ -136,23 +64,19 @@ export default function AuthProvider({ children }) {
       else if (event === 'TOKEN_REFRESHED') {
         updateSession(newSession);
       }
-      // For SIGNED_OUT, clear the session but maintain the error if we're in the signing out process
+      // For SIGNED_OUT, clear the session
       else if (event === 'SIGNED_OUT') {
         updateSession(null);
         eventBus.publish(events.USER_SIGNED_OUT, {});
         setHasRecordedLogin(false);
-        
-        // Only clear auth error if we're not in the process of signing out an unauthorized user
-        if (!isSigningOut) {
-          setAuthError(null);
-        }
+        setAuthError(null);
       }
     });
     
     return () => {
       authListener?.subscription.unsubscribe();
     };
-  }, [navigate, isSigningOut]); 
+  }, [navigate]); 
   
   useEffect(() => {
     if (session?.user?.email && !hasRecordedLogin) {
@@ -180,8 +104,7 @@ export default function AuthProvider({ children }) {
       user: session?.user || null, 
       loading, 
       signOut,
-      authError,
-      isSigningOut
+      authError
     }}>
       {children}
     </AuthContext.Provider>
