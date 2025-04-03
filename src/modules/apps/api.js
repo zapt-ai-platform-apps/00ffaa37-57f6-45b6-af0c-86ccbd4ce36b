@@ -2,7 +2,7 @@ import { supabase } from '@/supabaseClient';
 import * as Sentry from '@sentry/browser';
 
 // Helper to clean objects before sending to API
-function cleanObjectForUpdate(data) {
+export function cleanObjectForUpdate(data) {
   if (!data) return {};
   
   const safeData = { ...data };
