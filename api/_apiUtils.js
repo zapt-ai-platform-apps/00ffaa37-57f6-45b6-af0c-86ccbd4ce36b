@@ -39,6 +39,32 @@ export async function authenticateUser(req, requireAuth = true) {
 }
 
 export function getDbClient() {
-  const client = postgres(process.env.COCKROACH_DB_URL);
-  return drizzle(client);
+  try {
+    if (!process.env.COCKROACH_DB_URL) {
+      throw new Error('COCKROACH_DB_URL environment variable is not defined');
+    }
+    const client = postgres(process.env.COCKROACH_DB_URL);
+    return drizzle(client);
+  } catch (error) {
+    console.error('Failed to connect to database:', error);
+    Sentry.captureException(error);
+    throw new Error('Database connection failed: ' + error.message);
+  }
+}
+
+export async function verifyAppsTable(db) {
+  try {
+    const result = await db.execute(`
+      SELECT EXISTS (
+        SELECT FROM pg_tables
+        WHERE schemaname = 'public'
+        AND tablename = 'apps'
+      );
+    `);
+    return result[0]?.exists || false;
+  } catch (error) {
+    console.error('Error verifying apps table:', error);
+    Sentry.captureException(error);
+    return false;
+  }
 }

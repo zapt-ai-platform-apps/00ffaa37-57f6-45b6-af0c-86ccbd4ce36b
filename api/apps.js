@@ -1,5 +1,5 @@
 import { apps } from '../drizzle/schema.js';
-import { authenticateUser, getDbClient } from './_apiUtils.js';
+import { authenticateUser, getDbClient, verifyAppsTable } from './_apiUtils.js';
 import { eq } from 'drizzle-orm';
 import * as Sentry from '@sentry/node';
 
@@ -7,6 +7,14 @@ export default async function handler(req, res) {
   try {
     const user = await authenticateUser(req);
     const db = getDbClient();
+    
+    // Verify apps table exists
+    const tableExists = await verifyAppsTable(db);
+    if (!tableExists) {
+      return res.status(500).json({ 
+        error: 'Database table "apps" does not exist. Please run migrations first.'
+      });
+    }
 
     // GET request to fetch all apps
     if (req.method === 'GET') {
