@@ -13,3 +13,12 @@ export const apps = pgTable('apps', {
   domain: text('domain'),
   isPublic: boolean('is_public').default(false)
 });
+
+export const actions = pgTable('actions', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  appId: uuid('app_id').notNull(),
+  text: text('text').notNull(),
+  completed: boolean('completed').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+  completedAt: timestamp('completed_at')
+});

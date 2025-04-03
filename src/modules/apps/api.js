@@ -7,26 +7,18 @@ export async function getApps() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase
-      .from('apps')
-      .select('*')
-      .eq('user_id', session.user.id)
-      .order('created_at', { ascending: false });
-
-    if (error) throw error;
-
-    // Ensure actions is parsed for each app
-    return data.map(app => {
-      if (app.actions && typeof app.actions === 'string') {
-        try {
-          app.actions = JSON.parse(app.actions);
-        } catch (error) {
-          console.error('Error parsing actions:', error);
-          app.actions = [];
-        }
+    const response = await fetch('/api/apps', {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
       }
-      return app;
     });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch apps');
+    }
+
+    return await response.json();
   } catch (error) {
     console.error('Error getting apps:', error);
     Sentry.captureException(error);
@@ -40,26 +32,18 @@ export async function getApp(id) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase
-      .from('apps')
-      .select('*')
-      .eq('id', id)
-      .eq('user_id', session.user.id)
-      .single();
-
-    if (error) throw error;
-
-    // Ensure actions is parsed
-    if (data.actions && typeof data.actions === 'string') {
-      try {
-        data.actions = JSON.parse(data.actions);
-      } catch (error) {
-        console.error('Error parsing actions:', error);
-        data.actions = [];
+    const response = await fetch(`/api/app?id=${id}`, {
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
       }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch app');
     }
 
-    return data;
+    return await response.json();
   } catch (error) {
     console.error('Error getting app:', error);
     Sentry.captureException(error);
@@ -73,19 +57,21 @@ export async function createApp(appData) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase
-      .from('apps')
-      .insert([
-        {
-          ...appData,
-          user_id: session.user.id,
-          actions: []
-        }
-      ])
-      .select();
+    const response = await fetch('/api/apps', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify(appData)
+    });
 
-    if (error) throw error;
-    return data[0];
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create app');
+    }
+
+    return await response.json();
   } catch (error) {
     console.error('Error creating app:', error);
     Sentry.captureException(error);
@@ -99,18 +85,21 @@ export async function updateApp(id, appData) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Not authenticated');
 
-    // Ensure we're not trying to update the user_id
-    const { user_id, ...safeData } = appData;
+    const response = await fetch(`/api/app?id=${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify(appData)
+    });
 
-    const { data, error } = await supabase
-      .from('apps')
-      .update(safeData)
-      .eq('id', id)
-      .eq('user_id', session.user.id)
-      .select();
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update app');
+    }
 
-    if (error) throw error;
-    return data[0];
+    return await response.json();
   } catch (error) {
     console.error('Error updating app:', error);
     Sentry.captureException(error);
@@ -124,14 +113,19 @@ export async function deleteApp(id) {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Not authenticated');
 
-    const { error } = await supabase
-      .from('apps')
-      .delete()
-      .eq('id', id)
-      .eq('user_id', session.user.id);
+    const response = await fetch(`/api/app?id=${id}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
+    });
 
-    if (error) throw error;
-    return true;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to delete app');
+    }
+
+    return await response.json();
   } catch (error) {
     console.error('Error deleting app:', error);
     Sentry.captureException(error);
@@ -139,48 +133,83 @@ export async function deleteApp(id) {
   }
 }
 
-// Update the actions list for an app
-export async function updateActions(id, actions) {
+// Add a new action
+export async function addAction(appId, text) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase
-      .from('apps')
-      .update({ actions })
-      .eq('id', id)
-      .eq('user_id', session.user.id)
-      .select();
+    const response = await fetch('/api/actions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({ appId, text })
+    });
 
-    if (error) throw error;
-    return data[0];
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to add action');
+    }
+
+    return await response.json();
   } catch (error) {
-    console.error('Error updating actions:', error);
+    console.error('Error adding action:', error);
     Sentry.captureException(error);
     throw error;
   }
 }
 
-// Update the metrics for an app
-export async function updateMetrics(id, { userCount, revenue }) {
+// Update an action
+export async function updateAction(id, appId, updates) {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) throw new Error('Not authenticated');
 
-    const { data, error } = await supabase
-      .from('apps')
-      .update({ 
-        user_count: userCount, 
-        revenue 
-      })
-      .eq('id', id)
-      .eq('user_id', session.user.id)
-      .select();
+    const response = await fetch('/api/actions', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({ id, appId, ...updates })
+    });
 
-    if (error) throw error;
-    return data[0];
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to update action');
+    }
+
+    return await response.json();
   } catch (error) {
-    console.error('Error updating metrics:', error);
+    console.error('Error updating action:', error);
+    Sentry.captureException(error);
+    throw error;
+  }
+}
+
+// Delete an action
+export async function deleteAction(id, appId) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
+
+    const response = await fetch(`/api/actions?id=${id}&appId=${appId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`
+      }
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to delete action');
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error deleting action:', error);
     Sentry.captureException(error);
     throw error;
   }
@@ -189,9 +218,14 @@ export async function updateMetrics(id, { userCount, revenue }) {
 // Get all public apps
 export async function getPublicApps() {
   try {
-    const { data, error } = await fetch('/api/public-apps').then(res => res.json());
-    if (error) throw new Error(error);
-    return data || [];
+    const response = await fetch('/api/public-apps');
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch public apps');
+    }
+
+    return await response.json();
   } catch (error) {
     console.error('Error getting public apps:', error);
     Sentry.captureException(error);
@@ -202,33 +236,16 @@ export async function getPublicApps() {
 // Get public dashboard for a user
 export async function getUserPublicDashboard(userId) {
   try {
-    const { data, error } = await fetch(`/api/public-user?userId=${userId}`).then(res => res.json());
-    if (error) throw new Error(error);
-    return data || { apps: [], metrics: {} };
+    const response = await fetch(`/api/public-user?userId=${userId}`);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to fetch public dashboard');
+    }
+
+    return await response.json();
   } catch (error) {
     console.error('Error getting public dashboard:', error);
-    Sentry.captureException(error);
-    throw error;
-  }
-}
-
-// Update public status of an app
-export async function updatePublicStatus(id, isPublic) {
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) throw new Error('Not authenticated');
-
-    const { data, error } = await supabase
-      .from('apps')
-      .update({ is_public: isPublic })
-      .eq('id', id)
-      .eq('user_id', session.user.id)
-      .select();
-
-    if (error) throw error;
-    return data[0];
-  } catch (error) {
-    console.error('Error updating public status:', error);
     Sentry.captureException(error);
     throw error;
   }
