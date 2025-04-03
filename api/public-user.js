@@ -12,6 +12,7 @@ export default async function handler(req, res) {
       const { userId } = req.query;
       
       if (!userId) {
+        console.log('Missing userId parameter in public-user API call');
         return res.status(400).json({ error: 'User ID is required' });
       }
       

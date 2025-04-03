@@ -13,11 +13,13 @@ import * as Sentry from '@sentry/browser';
 const PublicView = () => {
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchApps = async () => {
       try {
         setLoading(true);
+        // API will now handle requests without userId parameter
         const data = await getPublicApps();
         console.log('Fetched public apps:', data);
         
@@ -38,9 +40,11 @@ const PublicView = () => {
         });
         
         setApps(processedApps || []);
+        setError(null);
       } catch (err) {
         console.error('Error fetching public apps:', err);
         Sentry.captureException(err);
+        setError('Unable to load apps. Please try again later.');
         // Use empty array for apps on error
         setApps([]);
       } finally {
@@ -64,7 +68,16 @@ const PublicView = () => {
         {/* Always use hardcoded metrics for the landing page */}
         <PublicMetrics isLandingPage={true} />
         <FeatureSection />
-        <PublicAppsList apps={apps} />
+        
+        {error ? (
+          <div className="rounded-md bg-red-50 p-6 my-6 text-center">
+            <h2 className="text-lg font-medium text-red-800 mb-2">Error Loading Apps</h2>
+            <p className="text-red-700">{error}</p>
+          </div>
+        ) : (
+          <PublicAppsList apps={apps} />
+        )}
+        
         <TestimonialSection />
       </div>
       
