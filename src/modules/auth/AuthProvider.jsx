@@ -3,6 +3,7 @@ import { supabase, recordLogin } from '@/supabaseClient';
 import { eventBus } from '@/modules/core/events';
 import { events } from './events';
 import * as Sentry from '@sentry/browser';
+import { useNavigate } from 'react-router-dom';
 
 export const AuthContext = createContext(null);
 
@@ -30,8 +31,10 @@ export default function AuthProvider({ children }) {
         // Only allow david@mapt.events to sign in
         if (data.session?.user?.email && data.session.user.email !== 'david@mapt.events') {
           console.log('Unauthorized user, signing out:', data.session.user.email);
-          await supabase.auth.signOut();
+          // First set error and clear session, then sign out
           setAuthError('Only david@mapt.events is allowed to access this app.');
+          updateSession(null);
+          await supabase.auth.signOut();
           setLoading(false);
           return;
         }
@@ -66,7 +69,9 @@ export default function AuthProvider({ children }) {
             }
           } else {
             console.log('Unauthorized user attempting to sign in:', newSession?.user?.email);
+            // First set error and clear session, then sign out
             setAuthError('Only david@mapt.events is allowed to access this app.');
+            updateSession(null);
             await supabase.auth.signOut();
           }
         } else {
@@ -79,13 +84,14 @@ export default function AuthProvider({ children }) {
           updateSession(newSession);
         } else if (newSession?.user) {
           console.log('Unauthorized user session refresh:', newSession.user.email);
+          setAuthError('Only david@mapt.events is allowed to access this app.');
+          updateSession(null);
           await supabase.auth.signOut();
         }
       }
       // For SIGNED_OUT, clear the session
       else if (event === 'SIGNED_OUT') {
         updateSession(null);
-        setAuthError(null);
         eventBus.publish(events.USER_SIGNED_OUT, {});
         setHasRecordedLogin(false);
       }

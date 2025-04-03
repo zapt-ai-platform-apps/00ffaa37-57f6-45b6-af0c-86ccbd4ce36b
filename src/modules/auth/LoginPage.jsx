@@ -22,9 +22,6 @@ export default function LoginPage() {
           <p className="mt-2 text-center text-sm text-gray-600">
             Sign in with ZAPT
           </p>
-          <p className="mt-2 text-center text-sm text-red-600 font-medium">
-            Note: This app is restricted to david@mapt.events only.
-          </p>
           <p className="text-center mt-2">
             <a href="https://www.zapt.ai" target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:text-indigo-500">
               Visit zapt.ai
