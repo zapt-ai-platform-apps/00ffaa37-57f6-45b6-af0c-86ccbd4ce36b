@@ -6,17 +6,20 @@ import {
   IoCheckmarkDoneOutline 
 } from 'react-icons/io5';
 
+// Hardcoded metrics values for the landing page
+const LANDING_PAGE_METRICS = {
+  totalApps: 324,
+  totalUsers: 15725,
+  totalRevenue: 127650.45,
+  completedActions: 1893,
+  totalActions: 2450
+};
+
 export default function PublicMetrics({ apps = [], isLandingPage = false }) {
   const stats = useMemo(() => {
-    // Use hardcoded values for landing page
+    // Always use hardcoded values for landing page
     if (isLandingPage) {
-      return {
-        totalApps: 324,
-        totalUsers: 15725,
-        totalRevenue: 127650.45,
-        completedActions: 1893,
-        totalActions: 2450
-      };
+      return LANDING_PAGE_METRICS;
     }
     
     // Ensure apps is always an array before reducing
