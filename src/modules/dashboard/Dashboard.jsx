@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import useAuth from '@/modules/auth/hooks/useAuth';
 import Layout from '@/shared/components/Layout';
 import AppList from '@/modules/apps/AppList';
@@ -9,7 +8,7 @@ import { getApps, createApp } from '@/modules/apps/api';
 import * as Sentry from '@sentry/browser';
 
 export default function Dashboard() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const [apps, setApps] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -56,14 +55,8 @@ export default function Dashboard() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-gray-900">Traction Dashboard</h1>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center">
             <span className="text-sm text-gray-600">{user?.email}</span>
-            <button 
-              onClick={signOut} 
-              className="btn-secondary text-sm cursor-pointer"
-            >
-              Sign Out
-            </button>
           </div>
         </div>
 
