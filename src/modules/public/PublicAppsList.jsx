@@ -65,11 +65,11 @@ const PublicAppsList = ({ apps }) => {
           {apps.map((app) => (
             <li key={app.id}>
               <div 
-                className="px-4 py-5 hover:bg-gray-50 transition-colors"
+                className="px-4 py-5 hover:bg-gray-50 transition-colors cursor-pointer"
                 onClick={() => handleAppClick(app.id)}
               >
                 <div className="flex items-center justify-between">
-                  <div className="cursor-pointer">
+                  <div>
                     <h3 className="text-lg font-medium text-indigo-600">{app.name}</h3>
                     <p className="mt-1 text-sm text-gray-500">{app.description}</p>
                     <p className="mt-1 text-xs text-gray-400">
@@ -146,7 +146,7 @@ const PublicAppsList = ({ apps }) => {
                         <ul className="list-disc pl-5 text-sm text-gray-600">
                           {Array.isArray(app.actions) 
                             ? app.actions.map((action, index) => (
-                                <li key={index} className="mb-1">
+                                <li key={action.id || index} className="mb-1">
                                   {action.text}
                                   {action.completed && <span className="ml-2 text-green-600">✓</span>}
                                 </li>
@@ -165,6 +165,6 @@ const PublicAppsList = ({ apps }) => {
       </div>
     </div>
   );
-};
+}
 
 export default PublicAppsList;

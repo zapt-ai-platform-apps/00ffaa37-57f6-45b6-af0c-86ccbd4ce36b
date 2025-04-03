@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import Layout from '@/shared/components/Layout';
 import MetricsForm from '@/modules/metrics/MetricsForm';
 import ActionsSection from '@/modules/actions/ActionsSection';
+import AppForm from '@/modules/apps/AppForm';
 import { getAppById, updateApp, deleteApp } from '@/modules/apps/api';
 import * as Sentry from '@sentry/browser';
 
@@ -12,7 +13,8 @@ export default function AppDetail() {
   const [app, setApp] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditingMetrics, setIsEditingMetrics] = useState(false);
+  const [isEditingAppDetails, setIsEditingAppDetails] = useState(false);
   const [deleteConfirmation, setDeleteConfirmation] = useState(false);
 
   useEffect(() => {
@@ -41,14 +43,37 @@ export default function AppDetail() {
       setLoading(true);
       const updatedApp = await updateApp(app.id, {
         ...app,
-        ...metricsData
+        userCount: metricsData.userCount,
+        revenue: metricsData.revenue
       });
       setApp(updatedApp);
-      setIsEditing(false);
+      setIsEditingMetrics(false);
     } catch (err) {
       console.error('Error updating metrics:', err);
       Sentry.captureException(err);
       setError('Failed to update metrics. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  const handleAppDetailsUpdate = async (appData) => {
+    if (!app) return;
+    
+    try {
+      setLoading(true);
+      const updatedApp = await updateApp(app.id, {
+        ...app,
+        name: appData.name,
+        description: appData.description,
+        domain: appData.domain
+      });
+      setApp(updatedApp);
+      setIsEditingAppDetails(false);
+    } catch (err) {
+      console.error('Error updating app details:', err);
+      Sentry.captureException(err);
+      setError('Failed to update app details. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -122,20 +147,39 @@ export default function AppDetail() {
             </Link>
             <h1 className="text-2xl font-bold mt-2">{app.name}</h1>
             <p className="text-gray-600">{app.description}</p>
+            {app.domain && (
+              <p className="text-sm text-gray-500 mt-1">
+                Domain: <a href={app.domain.startsWith('http') ? app.domain : `https://${app.domain}`} 
+                       target="_blank" 
+                       rel="noopener noreferrer"
+                       className="text-indigo-600 hover:text-indigo-800">{app.domain}</a>
+              </p>
+            )}
           </div>
           
           <div className="flex items-center space-x-3">
-            <button 
-              onClick={() => setIsEditing(!isEditing)}
-              className="btn-secondary"
-            >
-              {isEditing ? 'Cancel Edit' : 'Edit Metrics'}
-            </button>
+            {!isEditingAppDetails && !isEditingMetrics && (
+              <button 
+                onClick={() => setIsEditingAppDetails(true)}
+                className="btn-secondary cursor-pointer"
+              >
+                Edit App Details
+              </button>
+            )}
             
-            {!isEditing && (
+            {!isEditingAppDetails && (
+              <button 
+                onClick={() => setIsEditingMetrics(!isEditingMetrics)}
+                className="btn-secondary cursor-pointer"
+              >
+                {isEditingMetrics ? 'Cancel Edit' : 'Edit Metrics'}
+              </button>
+            )}
+            
+            {!isEditingAppDetails && !isEditingMetrics && (
               <button 
                 onClick={() => setDeleteConfirmation(true)}
-                className="btn-danger"
+                className="btn-danger cursor-pointer"
               >
                 Delete App
               </button>
@@ -151,13 +195,13 @@ export default function AppDetail() {
               <div className="flex justify-end space-x-3">
                 <button 
                   onClick={() => setDeleteConfirmation(false)}
-                  className="btn-secondary"
+                  className="btn-secondary cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button 
                   onClick={handleDeleteApp}
-                  className="btn-danger"
+                  className="btn-danger cursor-pointer"
                   disabled={loading}
                 >
                   {loading ? 'Deleting...' : 'Delete App'}
@@ -167,42 +211,57 @@ export default function AppDetail() {
           </div>
         )}
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="card">
-            <h3 className="text-lg font-semibold mb-3">Users</h3>
-            <p className="text-3xl font-bold">{app.userCount || 0}</p>
-          </div>
-          
-          <div className="card">
-            <h3 className="text-lg font-semibold mb-3">Revenue</h3>
-            <p className="text-3xl font-bold">${app.revenue || 0}</p>
-          </div>
-          
-          <div className="card">
-            <h3 className="text-lg font-semibold mb-3">Actions</h3>
-            <p className="text-3xl font-bold">
-              <span className="text-green-600">{(app.actions || []).filter(a => a.completed).length}</span>
-              {" / "}
-              <span>{(app.actions || []).length}</span>
-            </p>
-          </div>
-        </div>
-        
-        {isEditing ? (
+        {isEditingAppDetails ? (
           <div className="card mb-8">
-            <h2 className="text-xl font-semibold mb-4">Update Metrics</h2>
-            <MetricsForm 
+            <h2 className="text-xl font-semibold mb-4">Edit App Details</h2>
+            <AppForm 
               initialData={app} 
-              onSubmit={handleMetricsUpdate} 
-              onCancel={() => setIsEditing(false)}
+              onSubmit={handleAppDetailsUpdate} 
+              onCancel={() => setIsEditingAppDetails(false)}
               isLoading={loading}
+              isEditing={true}
             />
           </div>
         ) : (
-          <ActionsSection 
-            app={app} 
-            onUpdateApp={(updatedApp) => setApp(updatedApp)} 
-          />
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="card">
+                <h3 className="text-lg font-semibold mb-3">Users</h3>
+                <p className="text-3xl font-bold">{app.userCount || 0}</p>
+              </div>
+              
+              <div className="card">
+                <h3 className="text-lg font-semibold mb-3">Revenue</h3>
+                <p className="text-3xl font-bold">${app.revenue || 0}</p>
+              </div>
+              
+              <div className="card">
+                <h3 className="text-lg font-semibold mb-3">Actions</h3>
+                <p className="text-3xl font-bold">
+                  <span className="text-green-600">{(app.actions || []).filter(a => a.completed).length}</span>
+                  {" / "}
+                  <span>{(app.actions || []).length}</span>
+                </p>
+              </div>
+            </div>
+            
+            {isEditingMetrics ? (
+              <div className="card mb-8">
+                <h2 className="text-xl font-semibold mb-4">Update Metrics</h2>
+                <MetricsForm 
+                  initialData={app} 
+                  onSubmit={handleMetricsUpdate} 
+                  onCancel={() => setIsEditingMetrics(false)}
+                  isLoading={loading}
+                />
+              </div>
+            ) : (
+              <ActionsSection 
+                app={app} 
+                onUpdateApp={(updatedApp) => setApp(updatedApp)} 
+              />
+            )}
+          </>
         )}
       </div>
     </Layout>

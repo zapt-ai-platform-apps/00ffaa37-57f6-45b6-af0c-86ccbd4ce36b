@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export default function AppForm({ onSubmit, onCancel, isLoading, initialData = {} }) {
+export default function AppForm({ onSubmit, onCancel, isLoading, initialData = {}, isEditing = false }) {
   const [formData, setFormData] = useState({
     name: initialData.name || '',
     description: initialData.description || '',
@@ -53,7 +53,7 @@ export default function AppForm({ onSubmit, onCancel, isLoading, initialData = {
       newErrors.revenue = 'Revenue cannot be negative';
     }
     
-    // Optional domain validation - if provided, must be a valid URL
+    // Optional domain validation - if provided, must be a valid URL or domain
     if (formData.domain && !isValidDomain(formData.domain)) {
       newErrors.domain = 'Please enter a valid domain (e.g., example.com)';
     }
@@ -132,42 +132,44 @@ export default function AppForm({ onSubmit, onCancel, isLoading, initialData = {
         </p>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-        <div>
-          <label htmlFor="userCount" className="block text-sm font-medium text-gray-700 mb-1">
-            Current Users
-          </label>
-          <input
-            type="number"
-            id="userCount"
-            name="userCount"
-            value={formData.userCount}
-            onChange={handleChange}
-            min="0"
-            className={`input w-full box-border ${errors.userCount ? 'border-red-500' : ''}`}
-            disabled={isLoading}
-          />
-          {errors.userCount && <p className="mt-1 text-sm text-red-600">{errors.userCount}</p>}
+      {!isEditing && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label htmlFor="userCount" className="block text-sm font-medium text-gray-700 mb-1">
+              Current Users
+            </label>
+            <input
+              type="number"
+              id="userCount"
+              name="userCount"
+              value={formData.userCount}
+              onChange={handleChange}
+              min="0"
+              className={`input w-full box-border ${errors.userCount ? 'border-red-500' : ''}`}
+              disabled={isLoading}
+            />
+            {errors.userCount && <p className="mt-1 text-sm text-red-600">{errors.userCount}</p>}
+          </div>
+          
+          <div>
+            <label htmlFor="revenue" className="block text-sm font-medium text-gray-700 mb-1">
+              Revenue ($)
+            </label>
+            <input
+              type="number"
+              id="revenue"
+              name="revenue"
+              value={formData.revenue}
+              onChange={handleChange}
+              min="0"
+              step="0.01"
+              className={`input w-full box-border ${errors.revenue ? 'border-red-500' : ''}`}
+              disabled={isLoading}
+            />
+            {errors.revenue && <p className="mt-1 text-sm text-red-600">{errors.revenue}</p>}
+          </div>
         </div>
-        
-        <div>
-          <label htmlFor="revenue" className="block text-sm font-medium text-gray-700 mb-1">
-            Revenue ($)
-          </label>
-          <input
-            type="number"
-            id="revenue"
-            name="revenue"
-            value={formData.revenue}
-            onChange={handleChange}
-            min="0"
-            step="0.01"
-            className={`input w-full box-border ${errors.revenue ? 'border-red-500' : ''}`}
-            disabled={isLoading}
-          />
-          {errors.revenue && <p className="mt-1 text-sm text-red-600">{errors.revenue}</p>}
-        </div>
-      </div>
+      )}
       
       <div className="flex justify-end space-x-3 mt-6">
         <button

@@ -1,5 +1,5 @@
 import { apps } from '../drizzle/schema.js';
-import { authenticateUser, getDbClient } from './_apiUtils.js';
+import { getDbClient } from './_apiUtils.js';
 import { eq } from 'drizzle-orm';
 import * as Sentry from '@sentry/node';
 
