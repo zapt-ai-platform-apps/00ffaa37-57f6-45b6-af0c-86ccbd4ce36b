@@ -8,6 +8,7 @@ import FeatureSection from './FeatureSection';
 import FooterSection from './FooterSection';
 import LoadingPage from '@/shared/components/LoadingPage';
 import * as Sentry from '@sentry/browser';
+import { sampleApps } from './sampleApps';
 
 const PublicView = () => {
   const [apps, setApps] = useState([]);
@@ -18,33 +19,13 @@ const PublicView = () => {
     const fetchApps = async () => {
       try {
         setLoading(true);
-        // API will now handle requests without userId parameter
-        const data = await getPublicApps();
-        console.log('Fetched public apps:', data);
-        
-        // Ensure actions is properly parsed for each app
-        const processedApps = data.map(app => {
-          // Ensure actions is an array
-          if (!app.actions) {
-            app.actions = [];
-          } else if (typeof app.actions === 'string') {
-            try {
-              app.actions = JSON.parse(app.actions);
-            } catch (e) {
-              console.error('Error parsing actions for app:', app.id, e);
-              app.actions = [];
-            }
-          }
-          return app;
-        });
-        
-        setApps(processedApps || []);
+        // For the landing page, we'll always use sample apps
+        setApps(sampleApps);
         setError(null);
       } catch (err) {
-        console.error('Error fetching public apps:', err);
+        console.error('Error setting up sample apps:', err);
         Sentry.captureException(err);
         setError('Unable to load apps. Please try again later.');
-        // Use empty array for apps on error
         setApps([]);
       } finally {
         setLoading(false);
