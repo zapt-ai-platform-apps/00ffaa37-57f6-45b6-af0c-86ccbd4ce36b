@@ -47,9 +47,11 @@ export default function PublicHeader() {
           </a>
           <Link 
             to="/login" 
-            className={`btn-primary cursor-pointer transform transition-all hover:shadow-md active:shadow-sm active:translate-y-0.5 ${
-              scrolled ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-600 border border-indigo-200'
-            }`}
+            className={`cursor-pointer transform transition-all hover:shadow-md active:shadow-sm active:translate-y-0.5 ${
+              scrolled 
+                ? 'bg-indigo-600 text-white hover:bg-indigo-700 hover:text-white' 
+                : 'bg-white text-indigo-600 border border-indigo-200 hover:bg-indigo-600 hover:text-white'
+            } px-4 py-2 rounded-md font-medium`}
           >
             Login
           </Link>
