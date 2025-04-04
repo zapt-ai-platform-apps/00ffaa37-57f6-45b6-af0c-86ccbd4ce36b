@@ -1,4 +1,6 @@
-import { authenticateUser, getDbClient } from './_apiUtils.js';
+import { authenticateUser } from './_apiUtils.js';
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
 import { metricHistory } from '../drizzle/schema.js';
 import { eq, and, desc } from 'drizzle-orm';
 import Sentry from './_sentry.js';
@@ -8,7 +10,8 @@ export default async function handler(req, res) {
   
   try {
     const user = await authenticateUser(req);
-    const db = getDbClient();
+    const client = postgres(process.env.COCKROACH_DB_URL);
+    const db = drizzle(client);
     
     if (req.method === 'GET') {
       // Get metric history for an app
@@ -35,7 +38,11 @@ export default async function handler(req, res) {
         .orderBy(desc(metricHistory.recordedAt))
         .limit(parseInt(limit, 10));
       
-      console.log(`Found ${history.length} history records`);
+      console.log(`Found ${history.length} history records for metric type ${metricType}`);
+      if (history.length > 0) {
+        console.log(`Sample record: `, JSON.stringify(history[0]));
+      }
+      
       return res.status(200).json(history);
     } 
     else if (req.method === 'POST') {
@@ -63,6 +70,8 @@ export default async function handler(req, res) {
           value,
         })
         .returning();
+      
+      console.log(`Recorded new metric, result:`, JSON.stringify(result[0]));
       
       return res.status(201).json(result[0]);
     } 

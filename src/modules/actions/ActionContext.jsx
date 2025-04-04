@@ -29,7 +29,7 @@ export default function ActionContext({ app, onUpdateContext, isLoading }) {
           </div>
         ) : (
           <p className="text-gray-500 italic">
-            Add extra information about your app that will help the AI generate better growth actions.
+            Add extra information about your personal additional context, like contacts in the space or personal experience.
           </p>
         )}
       </div>
@@ -50,7 +50,7 @@ export default function ActionContext({ app, onUpdateContext, isLoading }) {
             onChange={(e) => setContext(e.target.value)}
             className="input box-border border-gray-300"
             rows="5"
-            placeholder="Examples: target audience, specific challenges, marketing channels, etc."
+            placeholder="Examples: contacts in the space, personal experience, etc."
           ></textarea>
           <p className="mt-1 text-sm text-gray-500">
             This information will be used by the AI when generating startup actions for your app.

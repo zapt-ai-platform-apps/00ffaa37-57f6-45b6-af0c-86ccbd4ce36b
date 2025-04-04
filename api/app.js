@@ -68,23 +68,33 @@ export default async function handler(req, res) {
       // Record metric history if metrics have changed
       const currentApp = appData[0];
       try {
-        if ('userCount' in safeUpdateData && safeUpdateData.userCount !== currentApp.userCount) {
-          console.log(`Recording user count history: ${safeUpdateData.userCount} (changed from ${currentApp.userCount})`);
+        // Convert values to numbers for reliable comparison
+        const currentUserCount = Number(currentApp.userCount) || 0;
+        const currentRevenue = Number(currentApp.revenue) || 0;
+        const newUserCount = Number(safeUpdateData.userCount) || 0;
+        const newRevenue = Number(safeUpdateData.revenue) || 0;
+
+        console.log(`Current metrics - userCount: ${currentUserCount}, revenue: ${currentRevenue}`);
+        console.log(`New metrics - userCount: ${newUserCount}, revenue: ${newRevenue}`);
+
+        // Always record new metrics when they are provided in the update, regardless of change
+        if ('userCount' in safeUpdateData) {
+          console.log(`Recording user count history: ${newUserCount}`);
           await db.insert(metricHistory)
             .values({
               appId: id,
               metricType: 'user_count',
-              value: safeUpdateData.userCount
+              value: newUserCount
             });
         }
         
-        if ('revenue' in safeUpdateData && safeUpdateData.revenue !== currentApp.revenue) {
-          console.log(`Recording revenue history: ${safeUpdateData.revenue} (changed from ${currentApp.revenue})`);
+        if ('revenue' in safeUpdateData) {
+          console.log(`Recording revenue history: ${newRevenue}`);
           await db.insert(metricHistory)
             .values({
               appId: id,
               metricType: 'revenue',
-              value: safeUpdateData.revenue
+              value: newRevenue
             });
         }
       } catch (historyError) {

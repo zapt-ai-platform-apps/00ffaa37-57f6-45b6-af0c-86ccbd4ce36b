@@ -10,6 +10,7 @@ import ActionContext from '@/modules/actions/ActionContext';
 import * as Sentry from '@sentry/browser';
 import useAuth from '@/modules/auth/hooks/useAuth';
 import { IoArrowBack } from 'react-icons/io5';
+import { recordMetricHistory } from '@/modules/metrics/api';
 
 export default function AppDetail() {
   const { id } = useParams();
@@ -86,11 +87,29 @@ export default function AppDetail() {
     
     try {
       setUpdating(true);
-      // Only send the metrics fields
+      const newUserCount = parseInt(metrics.userCount);
+      const newRevenue = parseFloat(metrics.revenue);
+      
+      console.log(`Updating metrics - userCount: ${newUserCount}, revenue: ${newRevenue}`);
+      
+      // Update the app with new metrics
       const updatedApp = await updateApp(id, {
-        userCount: parseInt(metrics.userCount),
-        revenue: parseFloat(metrics.revenue)
+        userCount: newUserCount,
+        revenue: newRevenue
       });
+      
+      // Also explicitly record the metric history to ensure it's captured
+      try {
+        console.log(`Explicitly recording metric history for user count: ${newUserCount}`);
+        await recordMetricHistory(id, 'user_count', newUserCount);
+        
+        console.log(`Explicitly recording metric history for revenue: ${newRevenue}`);
+        await recordMetricHistory(id, 'revenue', newRevenue);
+      } catch (historyError) {
+        console.error('Error explicitly recording metric history:', historyError);
+        Sentry.captureException(historyError);
+        // Continue with the update even if history recording fails
+      }
       
       setApp({
         ...app,

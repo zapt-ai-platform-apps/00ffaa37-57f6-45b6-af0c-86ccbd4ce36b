@@ -39,6 +39,8 @@ export default function MetricChart({ appId, metricType, title, color = 'rgb(75,
         console.log(`Fetching ${metricType} history for app ${appId}`);
         const history = await getMetricHistory(appId, metricType);
         
+        console.log(`Received ${metricType} history data:`, history);
+        
         // If we have no data, create empty chart
         if (!history || history.length === 0) {
           console.log(`No ${metricType} history data available`);
@@ -62,6 +64,8 @@ export default function MetricChart({ appId, metricType, title, color = 'rgb(75,
           new Date(a.recordedAt) - new Date(b.recordedAt)
         );
         
+        console.log(`Sorted history:`, sortedHistory);
+        
         const labels = sortedHistory.map(item => 
           format(new Date(item.recordedAt), 'MMM d, yyyy')
         );
@@ -69,6 +73,9 @@ export default function MetricChart({ appId, metricType, title, color = 'rgb(75,
         const dataValues = sortedHistory.map(item => 
           parseFloat(item.value)
         );
+        
+        console.log(`Chart labels:`, labels);
+        console.log(`Chart values:`, dataValues);
         
         setChartData({
           labels,
