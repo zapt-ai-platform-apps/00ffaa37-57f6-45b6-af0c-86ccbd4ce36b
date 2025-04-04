@@ -8,10 +8,10 @@ export const sampleApps = [
     userCount: 2150,
     revenue: 7190.25,
     actions: [
-      { id: "action-1-1", text: "Implement email reminder system", completed: true },
-      { id: "action-1-2", text: "Add team collaboration features", completed: true },
-      { id: "action-1-3", text: "Create mobile app version", completed: false },
-      { id: "action-1-4", text: "Integrate with popular calendar apps", completed: false }
+      { id: "action-1-1", text: "Launch Product Hunt campaign", completed: true },
+      { id: "action-1-2", text: "Implement referral program for teams", completed: true },
+      { id: "action-1-3", text: "Create content marketing strategy focusing on productivity", completed: false },
+      { id: "action-1-4", text: "Partner with productivity influencers for promotion", completed: false }
     ]
   },
   {
@@ -23,11 +23,11 @@ export const sampleApps = [
     userCount: 1230,
     revenue: 4920.50,
     actions: [
-      { id: "action-2-1", text: "Add nutrition tracking features", completed: true },
-      { id: "action-2-2", text: "Implement sleep quality analysis", completed: true },
-      { id: "action-2-3", text: "Create data export functionality", completed: true },
-      { id: "action-2-4", text: "Develop personalized recommendations", completed: false },
-      { id: "action-2-5", text: "Integrate with additional fitness devices", completed: false }
+      { id: "action-2-1", text: "Create fitness challenge marketing campaign", completed: true },
+      { id: "action-2-2", text: "Partner with fitness influencers for app promotion", completed: true },
+      { id: "action-2-3", text: "Launch Facebook ad campaign targeting health enthusiasts", completed: true },
+      { id: "action-2-4", text: "Create content series on health benefits with app", completed: false },
+      { id: "action-2-5", text: "Implement SEO strategy for health tracking keywords", completed: false }
     ]
   },
   {
@@ -39,11 +39,11 @@ export const sampleApps = [
     userCount: 3450,
     revenue: 15200.00,
     actions: [
-      { id: "action-3-1", text: "Add support for video content generation", completed: true },
-      { id: "action-3-2", text: "Improve SEO suggestion algorithm", completed: true },
-      { id: "action-3-3", text: "Create social media scheduling", completed: false },
-      { id: "action-3-4", text: "Implement team collaboration features", completed: false },
-      { id: "action-3-5", text: "Add analytics dashboard", completed: false }
+      { id: "action-3-1", text: "Launch beta program for content creators", completed: true },
+      { id: "action-3-2", text: "Create YouTube tutorial series on content creation", completed: true },
+      { id: "action-3-3", text: "Implement pricing incentive for annual subscriptions", completed: false },
+      { id: "action-3-4", text: "Sponsor marketing podcast to reach target audience", completed: false },
+      { id: "action-3-5", text: "Create affiliate program for marketing agencies", completed: false }
     ]
   },
   {
@@ -55,11 +55,11 @@ export const sampleApps = [
     userCount: 1850,
     revenue: 8340.75,
     actions: [
-      { id: "action-4-1", text: "Add recurring invoice scheduling", completed: true },
-      { id: "action-4-2", text: "Implement multi-currency support", completed: true },
-      { id: "action-4-3", text: "Create financial reporting dashboard", completed: true },
-      { id: "action-4-4", text: "Add time tracking integration", completed: true },
-      { id: "action-4-5", text: "Develop client portal for invoice access", completed: false }
+      { id: "action-4-1", text: "Create case studies with successful freelancers", completed: true },
+      { id: "action-4-2", text: "Launch Google Ads campaign targeting small businesses", completed: true },
+      { id: "action-4-3", text: "Implement free trial extension strategy for conversions", completed: true },
+      { id: "action-4-4", text: "Partner with accounting software for integration promotion", completed: true },
+      { id: "action-4-5", text: "Create educational webinar series for freelance finances", completed: false }
     ]
   }
 ];
