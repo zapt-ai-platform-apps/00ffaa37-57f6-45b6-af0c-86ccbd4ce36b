@@ -28,8 +28,17 @@ export default function ActionContext({ app, onUpdateContext, isLoading }) {
             <p className="text-gray-800 whitespace-pre-wrap">{app.context}</p>
           </div>
         ) : (
-          <p className="text-gray-500 italic">
-            Add extra information about your personal additional context, like contacts in the space or personal experience.
+          <div className="text-gray-500">
+            <p>This information will be used by the AI to generate new actions for your app.</p>
+            <p className="mt-2 italic">
+              Add extra information about your personal contacts in the space, unique insights, or personal experience that can help the AI suggest better growth actions.
+            </p>
+          </div>
+        )}
+        
+        {app?.context && (
+          <p className="mt-3 text-sm text-gray-600">
+            This information will be used by the AI when generating new actions for your app.
           </p>
         )}
       </div>
@@ -42,18 +51,18 @@ export default function ActionContext({ app, onUpdateContext, isLoading }) {
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
           <label htmlFor="context" className="block text-sm font-medium text-gray-700 mb-1">
-            Extra Information for Action Generation
+            Context Information for Action Generation
           </label>
           <textarea
             id="context"
             value={context}
             onChange={(e) => setContext(e.target.value)}
-            className="input box-border border-gray-300"
+            className="input box-border border-gray-300 w-full"
             rows="5"
-            placeholder="Examples: contacts in the space, personal experience, etc."
+            placeholder="Examples: industry connections, personal expertise, target audience insights, market knowledge, etc."
           ></textarea>
           <p className="mt-1 text-sm text-gray-500">
-            This information will be used by the AI when generating startup actions for your app.
+            This information will be used by the AI to generate personalized growth actions for your app. The more specific details you provide, the more tailored the suggestions will be.
           </p>
         </div>
         
