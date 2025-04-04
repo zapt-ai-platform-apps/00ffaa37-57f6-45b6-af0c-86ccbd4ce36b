@@ -59,20 +59,29 @@ export default async function handler(req, res) {
       ${actionsText}
       ${contextText}
       
-      Based on this information and any actions already completed or in progress, please suggest THREE DISTINCT specific next actions I should take to grow my app's user base or revenue.
+      Based on this information and any actions already completed or in progress, please suggest THREE DISTINCT specific next actions I should take EXCLUSIVELY to gain traction for my app. Traction means directly growing my app's user base or revenue.
       
       Each action should be:
+      - SOLELY focused on gaining traction (user acquisition, retention, or revenue)
       - Specific and actionable (something I can actually do)
       - Achievable within 1-2 days at most
       - Small in scope with clear completion criteria
       - Realistic for a small team or solo developer
-      - Likely to help drive measurable growth
+      - Directly tied to measurable traction metrics (users or revenue)
       - Concise (under 30 words)
       
-      Examples of good actions:
+      DO NOT suggest actions related to:
+      - Internal app improvements not directly tied to traction
+      - General feature development not specifically for user acquisition
+      - Team management or operational tasks
+      - Long-term strategy without immediate traction impact
+      
+      Examples of good traction-focused actions:
       - "Create 3 social media posts showcasing your app's core features"
-      - "Reach out to 5 potential users for feedback via email"
-      - "Add a prominent call-to-action button on your landing page"
+      - "Set up a Google Ads campaign targeting your app's primary audience"
+      - "Add a referral system offering rewards for user invites"
+      - "Email existing users about your premium features with a time-limited discount"
+      - "Add prominent customer testimonials to your landing page"
       
       Format your answer as a JSON array with exactly 3 items, like this:
       ["Action 1", "Action 2", "Action 3"]

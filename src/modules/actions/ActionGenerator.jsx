@@ -32,7 +32,7 @@ export default function ActionGenerator({ app, onAddAction, onCancel }) {
         requestData.context = app.context;
       }
       
-      console.log('Generating actions with context:', app.context ? 'Yes' : 'No');
+      console.log('Generating traction-focused actions with context:', app.context ? 'Yes' : 'No');
       
       const response = await fetch('/api/generate-action', {
         method: 'POST',
@@ -86,7 +86,7 @@ export default function ActionGenerator({ app, onAddAction, onCancel }) {
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-      <h3 className="text-lg font-medium mb-4">AI-Generated Growth Actions</h3>
+      <h3 className="text-lg font-medium mb-4">AI-Generated Traction Actions</h3>
       
       {error && (
         <div className="bg-red-100 text-red-700 p-3 rounded-md mb-4">
@@ -97,13 +97,13 @@ export default function ActionGenerator({ app, onAddAction, onCancel }) {
       {isGenerating ? (
         <div className="text-center py-4">
           <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
-          <p className="text-gray-600">Generating your next actions...</p>
+          <p className="text-gray-600">Generating your next traction actions...</p>
         </div>
       ) : (
         <div>
           <div className="mb-4">
             <p className="text-sm text-gray-600 mb-3">
-              Select one of these actions that you'd like to add to your growth plan:
+              Select one of these traction-building actions that you'd like to add to your growth plan:
             </p>
             <div className="space-y-3">
               {generatedActions.map((action, index) => (
