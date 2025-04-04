@@ -123,7 +123,7 @@ const PublicDashboard = () => {
         </div>
         
         {apps && apps.length > 0 ? (
-          <PublicAppsList apps={apps} />
+          <PublicAppsList apps={apps} isPublicDashboard={true} />
         ) : (
           <div className="text-center py-16 bg-white rounded-xl shadow-md">
             <div className="bg-amber-50 inline-block p-6 rounded-full mb-4">

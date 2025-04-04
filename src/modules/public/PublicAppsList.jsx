@@ -3,7 +3,7 @@ import { formatDistanceToNow } from 'date-fns';
 import * as Sentry from '@sentry/browser';
 import { IoArrowDown, IoArrowUp, IoGlobeOutline, IoCheckmarkCircle } from 'react-icons/io5';
 
-const PublicAppsList = ({ apps }) => {
+const PublicAppsList = ({ apps, isPublicDashboard = false }) => {
   const [expandedApp, setExpandedApp] = useState(null);
   const [loading, setLoading] = useState(false);
   const [detailError, setDetailError] = useState(null);
@@ -40,12 +40,15 @@ const PublicAppsList = ({ apps }) => {
     return `https://${domain}`;
   };
 
-  const visitApp = (e) => {
+  const visitApp = (e, domain) => {
     e.stopPropagation(); // Prevent expanding/collapsing the app details
-    e.preventDefault(); // Prevent default link behavior
     
-    // Show tooltip or alert that these are sample apps
-    alert('These are sample showcase apps and not available to visit.');
+    if (!isPublicDashboard) {
+      e.preventDefault(); // Prevent default link behavior for landing page
+      // Show tooltip or alert that these are sample apps
+      alert('These are sample showcase apps and not available to visit.');
+    }
+    // For public dashboard, let the link behave normally (open in new tab)
   };
 
   const renderAppActions = (app) => {
@@ -156,17 +159,19 @@ const PublicAppsList = ({ apps }) => {
                 </div>
                 
                 <div className="flex flex-wrap md:flex-nowrap gap-4 items-center">
-                  {app.domain && (
-                    <button
-                      onClick={visitApp}
-                      className="btn-primary cursor-pointer flex-shrink-0 flex items-center gap-1 opacity-75"
-                      title="Sample app - not available to visit"
+                  {app.domain && isPublicDashboard && (
+                    <a
+                      href={formatDomain(app.domain)}
+                      onClick={(e) => visitApp(e, app.domain)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-primary cursor-pointer flex-shrink-0 flex items-center gap-1"
                     >
-                      View Demo
+                      View App
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                       </svg>
-                    </button>
+                    </a>
                   )}
                   
                   <div className="flex gap-6">

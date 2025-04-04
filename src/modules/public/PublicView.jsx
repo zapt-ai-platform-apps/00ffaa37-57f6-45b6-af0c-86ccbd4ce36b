@@ -55,7 +55,7 @@ const PublicView = () => {
             <p className="text-red-700">{error}</p>
           </div>
         ) : (
-          <PublicAppsList apps={apps} />
+          <PublicAppsList apps={apps} isPublicDashboard={false} />
         )}
       </div>
       
