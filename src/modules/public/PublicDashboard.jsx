@@ -26,12 +26,26 @@ const PublicDashboard = () => {
           const processedApps = data.apps.map(app => {
             // Ensure actions is an array
             if (!app.actions) {
+              console.log(`App ${app.id} has no actions, setting empty array`);
               app.actions = [];
             } else if (typeof app.actions === 'string') {
               try {
+                console.log(`App ${app.id} has string actions, parsing JSON`);
                 app.actions = JSON.parse(app.actions);
               } catch (e) {
                 console.error('Error parsing actions for app:', app.id, e);
+                app.actions = [];
+              }
+            } else if (!Array.isArray(app.actions)) {
+              console.log(`App ${app.id} has non-array actions, converting`);
+              try {
+                const actionsStr = JSON.stringify(app.actions);
+                app.actions = JSON.parse(actionsStr);
+                if (!Array.isArray(app.actions)) {
+                  app.actions = [];
+                }
+              } catch (e) {
+                console.error('Error converting actions for app:', app.id, e);
                 app.actions = [];
               }
             }

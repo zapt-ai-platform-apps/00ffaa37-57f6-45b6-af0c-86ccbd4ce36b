@@ -20,7 +20,6 @@ export default async function handler(req, res) {
       
       try {
         // Get all public apps for this user
-        // Removed 'strategy' field since it was dropped from the database in migration 0007
         const userApps = await db.select({
           id: apps.id,
           name: apps.name,
@@ -28,13 +27,17 @@ export default async function handler(req, res) {
           userCount: apps.userCount,
           revenue: apps.revenue,
           createdAt: apps.createdAt,
-          domain: apps.domain
+          domain: apps.domain,
+          actions: apps.actions // Include actions JSON field for fallback
         }).from(apps)
           .where(eq(apps.userId, userId));
+        
+        console.log(`Found ${userApps.length} apps for user ${userId}`);
         
         // For each app, try to get actions from the actions table
         const appsWithActions = await Promise.all(userApps.map(async (app) => {
           try {
+            // Query actions from the actions table
             const appActions = await db.select({
               id: actions.id,
               text: actions.text,
@@ -45,21 +48,32 @@ export default async function handler(req, res) {
               .where(eq(actions.appId, app.id))
               .orderBy(asc(actions.createdAt));
             
+            console.log(`Found ${appActions.length} actions in actions table for app ${app.id}`);
+            
+            if (appActions && appActions.length > 0) {
+              return {
+                ...app,
+                actions: appActions
+              };
+            }
+            
+            // If no actions in actions table, try the JSON field
+            console.log(`Falling back to JSON actions field for app ${app.id}`);
+            const parsedActions = parseActions(app.actions);
             return {
               ...app,
-              actions: appActions
+              actions: parsedActions
             };
           } catch (actionsError) {
-            console.error(`Error fetching actions for app ${app.id}, using JSON field:`, actionsError);
+            console.error(`Error fetching actions for app ${app.id}:`, actionsError);
             
-            // Fall back to getting actions from the app record
-            const [fullApp] = await db.select().from(apps)
-              .where(eq(apps.id, app.id))
-              .limit(1);
+            // Try to parse actions from the JSON field as fallback
+            const parsedActions = parseActions(app.actions);
+            console.log(`Parsed ${parsedActions.length} actions from JSON field for app ${app.id}`);
             
             return {
               ...app,
-              actions: parseActions(fullApp.actions)
+              actions: parsedActions
             };
           }
         }));

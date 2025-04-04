@@ -80,13 +80,17 @@ export function safeGet(obj, path, defaultValue) {
  * Safely parse actions from a potentially malformed JSON string or array
  */
 export function parseActions(actionsData) {
+  console.log('Parsing actions data type:', typeof actionsData);
+  
   // If it's already an array, return it
   if (Array.isArray(actionsData)) {
+    console.log('Actions is already an array with length:', actionsData.length);
     return actionsData;
   }
   
   // If it's null or undefined, return empty array
   if (actionsData === null || actionsData === undefined) {
+    console.log('Actions data is null or undefined, returning empty array');
     return [];
   }
   
@@ -95,14 +99,18 @@ export function parseActions(actionsData) {
     try {
       // Check if it looks like JSON
       if (actionsData.trim().startsWith('[')) {
-        return JSON.parse(actionsData);
+        const parsed = JSON.parse(actionsData);
+        console.log('Successfully parsed JSON string into array with length:', parsed.length);
+        return parsed;
       }
       
       // If it's just a comma-separated string, split it
-      return actionsData.split(',').map(text => ({
+      const items = actionsData.split(',').map(text => ({
         text: text.trim(),
         completed: false
       }));
+      console.log('Parsed comma-separated string into array with length:', items.length);
+      return items;
     } catch (error) {
       console.error('Error parsing actions:', error);
       Sentry.captureException(error);
@@ -112,7 +120,24 @@ export function parseActions(actionsData) {
     }
   }
   
-  // If it's an object but not an array (should not happen), return empty array
+  // If it's an object (like JSONB from PostgreSQL)
+  if (typeof actionsData === 'object') {
+    console.log('Actions data is an object (not array)');
+    // Try to handle it as best we can
+    try {
+      // Maybe it's stringified JSON that was parsed by the database driver
+      const jsonStr = JSON.stringify(actionsData);
+      const parsed = JSON.parse(jsonStr);
+      if (Array.isArray(parsed)) {
+        console.log('Converted object to array with length:', parsed.length);
+        return parsed;
+      }
+    } catch (e) {
+      console.error('Failed to convert object to actions array:', e);
+    }
+  }
+  
+  // If we get here, we couldn't parse it properly
   console.warn('Actions data is in unexpected format:', actionsData);
   return [];
 }

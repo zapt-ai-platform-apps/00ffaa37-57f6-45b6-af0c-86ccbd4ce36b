@@ -50,7 +50,12 @@ const PublicAppsList = ({ apps }) => {
   };
 
   const renderAppActions = (app) => {
-    if (!app.actions || !Array.isArray(app.actions) || app.actions.length === 0) {
+    console.log('Rendering actions for app:', app.id, 'Actions:', app.actions);
+    
+    // Ensure app.actions is an array
+    const actions = Array.isArray(app.actions) ? app.actions : [];
+    
+    if (actions.length === 0) {
       return (
         <div className="bg-gray-50 p-4 rounded-lg">
           <h4 className="font-medium text-gray-900 mb-3">Action Items</h4>
@@ -63,7 +68,7 @@ const PublicAppsList = ({ apps }) => {
       <div className="bg-gray-50 p-4 rounded-lg">
         <h4 className="font-medium text-gray-900 mb-3">Action Items</h4>
         <ul className="space-y-2">
-          {app.actions.map((action, index) => (
+          {actions.map((action, index) => (
             <li key={action.id || index} className="flex items-center">
               {action.completed ? (
                 <IoCheckmarkCircle className="h-5 w-5 text-green-500 flex-shrink-0 mr-2" />
@@ -80,7 +85,7 @@ const PublicAppsList = ({ apps }) => {
     );
   };
 
-  if (apps.length === 0) {
+  if (!apps || apps.length === 0) {
     return (
       <div className="text-center py-10">
         <p className="text-gray-500">No apps available at the moment.</p>
@@ -163,8 +168,8 @@ const PublicAppsList = ({ apps }) => {
                 </div>
               </div>
 
-              {/* Always show actions section for each app */}
-              <div className={`mt-6 pt-4 border-t border-gray-100 ${expandedApp !== app.id && 'hidden md:block'}`}>
+              {/* Actions section always available but only shown based on expandedApp state */}
+              <div className={`mt-6 pt-4 border-t border-gray-100 ${expandedApp !== app.id ? 'hidden md:block' : ''}`}>
                 <div className="grid grid-cols-1 gap-6">
                   {renderAppActions(app)}
                 </div>
@@ -193,12 +198,7 @@ const PublicAppsList = ({ apps }) => {
               {expandedApp === app.id && !loading && !detailError && (
                 <div className="mt-6 pt-4 border-t border-gray-100 md:hidden">
                   <div className="grid grid-cols-1 gap-6">
-                    {app.strategy && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h4 className="font-medium text-gray-900 mb-3">Growth Strategy</h4>
-                        <p className="text-gray-700 whitespace-pre-line">{app.strategy}</p>
-                      </div>
-                    )}
+                    {renderAppActions(app)}
                   </div>
                 </div>
               )}

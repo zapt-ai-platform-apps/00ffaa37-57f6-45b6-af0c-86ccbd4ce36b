@@ -113,7 +113,7 @@ export default function PublicMetrics({ apps = [], isLandingPage = false }) {
                   )}
                 </div>
                 <div className={`${metric.bgLight} p-3 rounded-lg`}>
-                  <metric.icon className={`h-6 w-6 bg-gradient-to-r ${metric.color} bg-clip-text text-transparent`} />
+                  <metric.icon className="h-6 w-6 text-gray-700" />
                 </div>
               </div>
               

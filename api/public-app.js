@@ -25,8 +25,8 @@ export default async function handler(req, res) {
           userCount: apps.userCount,
           revenue: apps.revenue,
           createdAt: apps.createdAt,
-          strategy: apps.strategy,
-          domain: apps.domain
+          domain: apps.domain,
+          actions: apps.actions // Include the JSON actions field
         }).from(apps)
           .where(eq(apps.id, id))
           .limit(1);
@@ -35,7 +35,7 @@ export default async function handler(req, res) {
           return res.status(404).json({ error: 'App not found' });
         }
         
-        // Get actions for this app
+        // Get actions for this app from the actions table
         let appActions = [];
         try {
           appActions = await db.select({
@@ -47,20 +47,26 @@ export default async function handler(req, res) {
           }).from(actions)
             .where(eq(actions.appId, id))
             .orderBy(asc(actions.createdAt));
+          
+          console.log(`Found ${appActions.length} actions in actions table for app ${id}`);
         } catch (actionsError) {
           console.error('Error fetching from actions table, will try JSON field:', actionsError);
           
           // Fall back to getting actions from the app record
-          const [fullApp] = await db.select().from(apps)
-            .where(eq(apps.id, id))
-            .limit(1);
-          
-          appActions = parseActions(fullApp.actions);
+          appActions = parseActions(app.actions);
+          console.log(`Parsed ${appActions.length} actions from JSON field for app ${id}`);
+        }
+        
+        // If no actions were found in either place, try to ensure we don't have an empty array
+        if (!appActions || appActions.length === 0) {
+          console.log(`No actions found for app ${id}, checking JSON field explicitly`);
+          // Make a direct attempt to parse the actions JSON
+          appActions = parseActions(app.actions);
         }
         
         return res.status(200).json({
           ...app,
-          actions: appActions
+          actions: appActions || [] // Ensure actions is always at least an empty array
         });
       } catch (error) {
         console.error('Error fetching public app:', error);
