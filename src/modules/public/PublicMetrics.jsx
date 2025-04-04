@@ -8,11 +8,11 @@ import {
 
 // Hardcoded metrics values for the landing page
 const LANDING_PAGE_METRICS = {
-  totalApps: 324,
-  totalUsers: 15725,
-  totalRevenue: 127650.45,
-  completedActions: 1893,
-  totalActions: 2450
+  totalApps: 7,
+  totalUsers: 340,
+  totalRevenue: 2750.00,
+  completedActions: 41,
+  totalActions: 53
 };
 
 export default function PublicMetrics({ apps = [], isLandingPage = false }) {
