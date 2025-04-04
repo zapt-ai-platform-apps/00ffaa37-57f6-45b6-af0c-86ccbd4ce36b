@@ -41,7 +41,7 @@ export const sampleApps = [
     actions: [
       { id: "action-3-1", text: "Launch beta program for content creators", completed: true },
       { id: "action-3-2", text: "Create YouTube tutorial series on content creation", completed: true },
-      { id: "action-3-3", text: "Implement pricing incentive for annual subscriptions", completed: false },
+      { id: "action-3-3", text: "Launch social media contest to increase brand visibility", completed: false },
       { id: "action-3-4", text: "Sponsor marketing podcast to reach target audience", completed: false },
       { id: "action-3-5", text: "Create affiliate program for marketing agencies", completed: false }
     ]
@@ -57,7 +57,7 @@ export const sampleApps = [
     actions: [
       { id: "action-4-1", text: "Create case studies with successful freelancers", completed: true },
       { id: "action-4-2", text: "Launch Google Ads campaign targeting small businesses", completed: true },
-      { id: "action-4-3", text: "Implement free trial extension strategy for conversions", completed: true },
+      { id: "action-4-3", text: "Develop SEO-optimized landing pages for organic traffic growth", completed: true },
       { id: "action-4-4", text: "Partner with accounting software for integration promotion", completed: true },
       { id: "action-4-5", text: "Create educational webinar series for freelance finances", completed: false }
     ]
