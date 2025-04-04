@@ -11,8 +11,7 @@
   ],
   "functions": {
     "api/*.js": {
-      "includeFiles": "../drizzle/schema.js",
-      "maxDuration": 60
+      "includeFiles": "../drizzle/schema.js"
     }
   }
 }

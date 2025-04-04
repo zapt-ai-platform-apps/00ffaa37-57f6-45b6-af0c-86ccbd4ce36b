@@ -4,6 +4,7 @@ import { getApp, updateApp, deleteApp } from './api';
 import Layout from '@/shared/components/Layout';
 import AppForm from './AppForm';
 import MetricsForm from '@/modules/metrics/MetricsForm';
+import MetricsCharts from '@/modules/metrics/MetricsCharts';
 import ActionsSection from '@/modules/actions/ActionsSection';
 import ActionContext from '@/modules/actions/ActionContext';
 import * as Sentry from '@sentry/browser';
@@ -285,15 +286,9 @@ export default function AppDetail() {
             isLoading={updating}
           />
 
-          <div className="card md:col-span-2">
-            <h2 className="text-lg font-semibold mb-4">App Growth</h2>
-            <div className="text-center py-4 text-gray-500">
-              Charts coming soon...
-            </div>
-          </div>
+          <MetricsCharts appId={id} />
         </div>
 
-        {/* Added this new component */}
         <ActionContext 
           app={app} 
           onUpdateContext={handleUpdateContext}

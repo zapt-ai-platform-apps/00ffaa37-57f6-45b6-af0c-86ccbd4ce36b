@@ -22,3 +22,11 @@ export const actions = pgTable('actions', {
   createdAt: timestamp('created_at').defaultNow(),
   completedAt: timestamp('completed_at')
 });
+
+export const metricHistory = pgTable('metric_history', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  appId: uuid('app_id').notNull().references(() => apps.id, { onDelete: 'cascade' }),
+  metricType: text('metric_type').notNull(),
+  value: numeric('value').notNull(),
+  recordedAt: timestamp('recorded_at').defaultNow()
+});

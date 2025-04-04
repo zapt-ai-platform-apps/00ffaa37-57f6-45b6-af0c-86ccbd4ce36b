@@ -1,9 +1,10 @@
 import { initializeZapt } from '@zapt/zapt-js';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
-import { apps } from '../drizzle/schema.js';
+import { apps, metricHistory } from '../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 import { authenticateUser } from './_apiUtils.js';
+import Sentry from './_sentry.js';
 
 export default async function handler(req, res) {
   console.log('API: app endpoint called');
@@ -64,6 +65,34 @@ export default async function handler(req, res) {
         .where(eq(apps.id, id))
         .returning();
       
+      // Record metric history if metrics have changed
+      const currentApp = appData[0];
+      try {
+        if ('userCount' in safeUpdateData && safeUpdateData.userCount !== currentApp.userCount) {
+          console.log(`Recording user count history: ${safeUpdateData.userCount} (changed from ${currentApp.userCount})`);
+          await db.insert(metricHistory)
+            .values({
+              appId: id,
+              metricType: 'user_count',
+              value: safeUpdateData.userCount
+            });
+        }
+        
+        if ('revenue' in safeUpdateData && safeUpdateData.revenue !== currentApp.revenue) {
+          console.log(`Recording revenue history: ${safeUpdateData.revenue} (changed from ${currentApp.revenue})`);
+          await db.insert(metricHistory)
+            .values({
+              appId: id,
+              metricType: 'revenue',
+              value: safeUpdateData.revenue
+            });
+        }
+      } catch (historyError) {
+        // Log the error but don't fail the update
+        console.error('Error recording metric history:', historyError);
+        Sentry.captureException(historyError);
+      }
+      
       res.status(200).json(result[0]);
     } else if (req.method === 'DELETE') {
       console.log(`DELETE request to remove app with ID: ${id}`);
@@ -88,6 +117,7 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error('Error in app API:', error);
+    Sentry.captureException(error);
     res.status(500).json({ error: error.message });
   }
 }
