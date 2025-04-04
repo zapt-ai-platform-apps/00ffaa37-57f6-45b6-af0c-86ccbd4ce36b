@@ -97,7 +97,7 @@ export default function MetricChart({ appId, metricType, title, color = 'rgb(75,
   
   if (loading) {
     return (
-      <div className="animate-pulse h-64 bg-gray-100 rounded-md flex items-center justify-center">
+      <div className="animate-pulse h-64 bg-gray-100 rounded-md flex items-center justify-center" role="status">
         <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
       </div>
     );
