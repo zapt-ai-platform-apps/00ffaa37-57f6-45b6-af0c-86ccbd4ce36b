@@ -6,6 +6,7 @@ import AppList from '../apps/AppList';
 import AppForm from '../apps/AppForm';
 import Layout from '../../shared/components/Layout';
 import * as Sentry from '@sentry/browser';
+import { createApp } from '../apps/api';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
@@ -15,6 +16,7 @@ const Dashboard = () => {
   const [showAppForm, setShowAppForm] = useState(false);
   const [showShareUrl, setShowShareUrl] = useState(false);
   const [shareUrlCopied, setShareUrlCopied] = useState(false);
+  const [isCreatingApp, setIsCreatingApp] = useState(false);
 
   useEffect(() => {
     fetchApps();
@@ -51,9 +53,19 @@ const Dashboard = () => {
     }
   };
 
-  const handleAppCreated = (newApp) => {
-    setApps([...apps, newApp]);
-    setShowAppForm(false);
+  const handleSubmit = async (formData) => {
+    try {
+      setIsCreatingApp(true);
+      const newApp = await createApp(formData);
+      setApps([...apps, newApp]);
+      setShowAppForm(false);
+    } catch (err) {
+      console.error('Error creating app:', err);
+      Sentry.captureException(err);
+      setError('Failed to create app: ' + err.message);
+    } finally {
+      setIsCreatingApp(false);
+    }
   };
 
   const handleAppDeleted = (deletedAppId) => {
@@ -106,7 +118,11 @@ const Dashboard = () => {
         
         {showAppForm && (
           <div className="mb-8">
-            <AppForm onAppCreated={handleAppCreated} onCancel={() => setShowAppForm(false)} />
+            <AppForm 
+              onSubmit={handleSubmit} 
+              onCancel={() => setShowAppForm(false)} 
+              isLoading={isCreatingApp}
+            />
           </div>
         )}
         
