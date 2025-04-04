@@ -99,7 +99,7 @@ export default function PublicMetrics({ apps = [], isLandingPage = false }) {
           Stats
         </span>
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Overall Progress</h2>
-        <p className="mt-3 text-xl text-gray-600">Track the collective growth of apps built with ZAPT</p>
+        <p className="mt-3 text-xl text-gray-600">Track the growth of apps you build with ZAPT</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
