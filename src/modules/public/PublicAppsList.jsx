@@ -40,13 +40,12 @@ const PublicAppsList = ({ apps }) => {
     return `https://${domain}`;
   };
 
-  const visitApp = (e, domain) => {
+  const visitApp = (e) => {
     e.stopPropagation(); // Prevent expanding/collapsing the app details
+    e.preventDefault(); // Prevent default link behavior
     
-    if (!domain) return;
-    
-    const formattedDomain = formatDomain(domain);
-    window.open(formattedDomain, '_blank', 'noopener,noreferrer');
+    // Show tooltip or alert that these are sample apps
+    alert('These are sample showcase apps and not available to visit.');
   };
 
   const renderAppActions = (app) => {
@@ -142,16 +141,12 @@ const PublicAppsList = ({ apps }) => {
                   <div className="flex items-center">
                     <h3 className="text-xl font-semibold text-indigo-600">{app.name}</h3>
                     {app.domain && (
-                      <a
-                        href={formatDomain(app.domain)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="ml-2 text-gray-400 hover:text-gray-600 transition-colors"
-                        title={app.domain}
+                      <span
+                        className="ml-2 text-gray-400 cursor-not-allowed"
+                        title="Sample app - not available to visit"
                       >
                         <IoGlobeOutline className="h-5 w-5" />
-                      </a>
+                      </span>
                     )}
                   </div>
                   <p className="mt-2 text-gray-600">{app.description}</p>
@@ -163,10 +158,11 @@ const PublicAppsList = ({ apps }) => {
                 <div className="flex flex-wrap md:flex-nowrap gap-4 items-center">
                   {app.domain && (
                     <button
-                      onClick={(e) => visitApp(e, app.domain)}
-                      className="btn-primary cursor-pointer flex-shrink-0 flex items-center gap-1"
+                      onClick={visitApp}
+                      className="btn-primary cursor-pointer flex-shrink-0 flex items-center gap-1 opacity-75"
+                      title="Sample app - not available to visit"
                     >
-                      Visit App
+                      View Demo
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                       </svg>
@@ -232,6 +228,10 @@ const PublicAppsList = ({ apps }) => {
             </div>
           </div>
         ))}
+      </div>
+      
+      <div className="text-center mt-8 text-sm text-gray-500">
+        <p>These are sample showcase apps for demonstration purposes only.</p>
       </div>
     </div>
   );
