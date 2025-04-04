@@ -5,6 +5,7 @@ import Layout from '@/shared/components/Layout';
 import AppForm from './AppForm';
 import MetricsForm from '@/modules/metrics/MetricsForm';
 import ActionsSection from '@/modules/actions/ActionsSection';
+import ActionContext from '@/modules/actions/ActionContext';
 import * as Sentry from '@sentry/browser';
 import useAuth from '@/modules/auth/hooks/useAuth';
 import { IoArrowBack } from 'react-icons/io5';
@@ -38,7 +39,8 @@ export default function AppDetail() {
         userCount: typeof appData.userCount === 'number' ? appData.userCount : 0,
         revenue: typeof appData.revenue === 'number' ? appData.revenue : 0,
         actions: Array.isArray(appData.actions) ? appData.actions : [],
-        isPublic: true // All apps are now public by default
+        isPublic: true, // All apps are now public by default
+        context: appData.context || '' // Add default for context field
       };
       
       setApp(normalizedApp);
@@ -98,6 +100,27 @@ export default function AppDetail() {
       console.error('Error updating metrics:', err);
       Sentry.captureException(err);
       setError('Failed to update metrics. Please try again.');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleUpdateContext = async (context) => {
+    if (!app) return;
+    
+    try {
+      setUpdating(true);
+      const updatedApp = await updateApp(id, { context });
+      
+      setApp({
+        ...app,
+        ...updatedApp
+      });
+      setError(null);
+    } catch (err) {
+      console.error('Error updating context:', err);
+      Sentry.captureException(err);
+      setError('Failed to update context. Please try again.');
     } finally {
       setUpdating(false);
     }
@@ -269,6 +292,13 @@ export default function AppDetail() {
             </div>
           </div>
         </div>
+
+        {/* Added this new component */}
+        <ActionContext 
+          app={app} 
+          onUpdateContext={handleUpdateContext}
+          isLoading={updating}
+        />
 
         <ActionsSection 
           app={app} 

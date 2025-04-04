@@ -11,7 +11,7 @@ export default async function handler(req, res) {
       return res.status(405).json({ error: 'Method not allowed' });
     }
     
-    const { appName, appDescription, userCount, revenue, actions } = req.body;
+    const { appName, appDescription, userCount, revenue, actions, context } = req.body;
     
     if (!appName || !appDescription) {
       return res.status(400).json({ error: 'Missing required fields' });
@@ -44,10 +44,20 @@ export default async function handler(req, res) {
       }
     }
     
+    // Add additional context if available
+    let contextText = '';
+    if (context && context.trim()) {
+      contextText = `\nAdditional context about the app:\n${context}\n`;
+    }
+    
+    // Include stats section explicitly to highlight them
+    const statsSection = `\nApp Statistics:\n- User count: ${userCount || 0}\n- Revenue: $${revenue || 0}`;
+    
     const prompt = `
       I have an app called "${appName}" with the following description: "${appDescription}".
-      Currently, it has ${userCount || 0} users and has generated $${revenue || 0} in revenue.
+      ${statsSection}
       ${actionsText}
+      ${contextText}
       
       Based on this information and any actions already completed or in progress, please suggest THREE DISTINCT specific next actions I should take to grow my app's user base or revenue.
       
@@ -69,6 +79,8 @@ export default async function handler(req, res) {
       
       Just provide the JSON array directly without any explanation or additional text.
     `;
+    
+    console.log('Sending prompt to AI with context:', context ? 'Yes' : 'No');
     
     const response = await anthropic.messages.create({
       model: "claude-3-7-sonnet-20250219",

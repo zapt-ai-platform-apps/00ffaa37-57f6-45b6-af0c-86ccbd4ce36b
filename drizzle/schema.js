@@ -10,7 +10,8 @@ export const apps = pgTable('apps', {
   userId: uuid('user_id').notNull(),
   actions: jsonb('actions').default([]),
   domain: text('domain'),
-  isPublic: boolean('is_public').default(false)
+  isPublic: boolean('is_public').default(false),
+  context: text('context') // Added this field
 });
 
 export const actions = pgTable('actions', {

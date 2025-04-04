@@ -18,19 +18,29 @@ export default function ActionGenerator({ app, onAddAction, onCancel }) {
       // Get auth token
       const { data: { session } } = await supabase.auth.getSession();
       
+      // Include app context in the request
+      const requestData = {
+        appName: app.name,
+        appDescription: app.description,
+        userCount: app.userCount,
+        revenue: app.revenue,
+        actions: app.actions
+      };
+      
+      // Add context if it exists
+      if (app.context && app.context.trim()) {
+        requestData.context = app.context;
+      }
+      
+      console.log('Generating actions with context:', app.context ? 'Yes' : 'No');
+      
       const response = await fetch('/api/generate-action', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${session?.access_token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          appName: app.name,
-          appDescription: app.description,
-          userCount: app.userCount,
-          revenue: app.revenue,
-          actions: app.actions
-        }),
+        body: JSON.stringify(requestData),
       });
       
       if (!response.ok) {
