@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { formatDistanceToNow } from 'date-fns';
 import * as Sentry from '@sentry/browser';
-import { IoArrowDown, IoArrowUp, IoGlobeOutline, IoCheckmarkCircle } from 'react-icons/io5';
+import { IoArrowDown, IoArrowUp, IoCheckmarkCircle } from 'react-icons/io5';
 
 const PublicAppsList = ({ apps, isPublicDashboard = false }) => {
   const [expandedApp, setExpandedApp] = useState(null);
@@ -143,14 +143,6 @@ const PublicAppsList = ({ apps, isPublicDashboard = false }) => {
                 <div className="flex-1">
                   <div className="flex items-center">
                     <h3 className="text-xl font-semibold text-indigo-600">{app.name}</h3>
-                    {app.domain && (
-                      <span
-                        className="ml-2 text-gray-400 cursor-not-allowed"
-                        title="Sample app - not available to visit"
-                      >
-                        <IoGlobeOutline className="h-5 w-5" />
-                      </span>
-                    )}
                   </div>
                   <p className="mt-2 text-gray-600">{app.description}</p>
                   <p className="mt-2 text-xs text-gray-400">
@@ -233,10 +225,6 @@ const PublicAppsList = ({ apps, isPublicDashboard = false }) => {
             </div>
           </div>
         ))}
-      </div>
-      
-      <div className="text-center mt-8 text-sm text-gray-500">
-        <p>These are sample showcase apps for demonstration purposes only.</p>
       </div>
     </div>
   );
