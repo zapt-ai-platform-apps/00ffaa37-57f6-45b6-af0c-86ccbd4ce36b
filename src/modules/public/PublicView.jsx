@@ -5,7 +5,6 @@ import PublicAppsList from './PublicAppsList';
 import PublicMetrics from './PublicMetrics';
 import Hero from './Hero';
 import FeatureSection from './FeatureSection';
-import TestimonialSection from './TestimonialSection';
 import FooterSection from './FooterSection';
 import LoadingPage from '@/shared/components/LoadingPage';
 import * as Sentry from '@sentry/browser';
@@ -77,8 +76,6 @@ const PublicView = () => {
         ) : (
           <PublicAppsList apps={apps} />
         )}
-        
-        <TestimonialSection />
       </div>
       
       <FooterSection />

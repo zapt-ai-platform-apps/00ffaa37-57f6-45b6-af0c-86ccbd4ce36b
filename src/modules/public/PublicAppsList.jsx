@@ -64,18 +64,36 @@ const PublicAppsList = ({ apps }) => {
       );
     }
 
+    // Calculate completion percentage
+    const completedCount = actions.filter(action => action.completed).length;
+    const percentage = actions.length > 0 ? Math.round((completedCount / actions.length) * 100) : 0;
+
     return (
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <h4 className="font-medium text-gray-900 mb-3">Action Items</h4>
-        <ul className="space-y-2">
+      <div className="bg-gray-50 p-5 rounded-lg">
+        <div className="flex justify-between items-center mb-4">
+          <h4 className="font-medium text-gray-900">Action Items</h4>
+          <span className="text-sm text-indigo-600 font-medium">{completedCount}/{actions.length} completed</span>
+        </div>
+        
+        {/* Progress bar */}
+        <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
+          <div 
+            className="h-2 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600"
+            style={{ width: `${percentage}%` }}
+          ></div>
+        </div>
+        
+        <ul className="space-y-3 mt-4">
           {actions.map((action, index) => (
-            <li key={action.id || index} className="flex items-center">
-              {action.completed ? (
-                <IoCheckmarkCircle className="h-5 w-5 text-green-500 flex-shrink-0 mr-2" />
-              ) : (
-                <div className="h-5 w-5 border-2 border-gray-300 rounded-full flex-shrink-0 mr-2"></div>
-              )}
-              <span className={`${action.completed ? 'text-gray-500' : 'text-gray-700'}`}>
+            <li key={action.id || index} className="flex items-start py-2 px-3 hover:bg-gray-100 rounded-md transition-colors">
+              <div className="flex-shrink-0 mt-0.5">
+                {action.completed ? (
+                  <IoCheckmarkCircle className="h-5 w-5 text-green-500" />
+                ) : (
+                  <div className="h-5 w-5 border-2 border-gray-300 rounded-full"></div>
+                )}
+              </div>
+              <span className={`ml-3 ${action.completed ? 'text-gray-500 line-through' : 'text-gray-700'}`}>
                 {action.text}
               </span>
             </li>
@@ -87,8 +105,14 @@ const PublicAppsList = ({ apps }) => {
 
   if (!apps || apps.length === 0) {
     return (
-      <div className="text-center py-10">
-        <p className="text-gray-500">No apps available at the moment.</p>
+      <div className="text-center py-16 bg-white rounded-xl shadow-md">
+        <div className="bg-gray-50 inline-block p-6 rounded-full mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-12 h-12 text-gray-400">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" />
+          </svg>
+        </div>
+        <p className="text-gray-500 text-lg">No apps available at the moment.</p>
+        <p className="text-gray-400 mt-2">Check back later for updates.</p>
       </div>
     );
   }
@@ -96,15 +120,18 @@ const PublicAppsList = ({ apps }) => {
   return (
     <div className="py-16">
       <div className="text-center mb-12">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900">Apps</h2>
+        <span className="inline-block px-3 py-1 text-sm font-medium bg-indigo-100 text-indigo-800 rounded-full mb-4">
+          Showcase
+        </span>
+        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Apps Gallery</h2>
         <p className="mt-3 text-xl text-gray-600">Discover and explore apps built with ZAPT</p>
       </div>
       
-      <div className="space-y-6">
+      <div className="space-y-8">
         {apps.map((app) => (
           <div 
             key={app.id}
-            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300"
+            className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-all duration-300 transform hover:translate-y-[-2px]"
           >
             <div 
               className="p-6 cursor-pointer"
@@ -120,7 +147,7 @@ const PublicAppsList = ({ apps }) => {
                         target="_blank"
                         rel="noopener noreferrer"
                         onClick={(e) => e.stopPropagation()}
-                        className="ml-2 text-gray-400 hover:text-gray-600"
+                        className="ml-2 text-gray-400 hover:text-gray-600 transition-colors"
                         title={app.domain}
                       >
                         <IoGlobeOutline className="h-5 w-5" />
@@ -128,7 +155,7 @@ const PublicAppsList = ({ apps }) => {
                     )}
                   </div>
                   <p className="mt-2 text-gray-600">{app.description}</p>
-                  <p className="mt-1 text-xs text-gray-400">
+                  <p className="mt-2 text-xs text-gray-400">
                     Created {formatDistanceToNow(new Date(app.createdAt), { addSuffix: true })}
                   </p>
                 </div>
@@ -137,9 +164,12 @@ const PublicAppsList = ({ apps }) => {
                   {app.domain && (
                     <button
                       onClick={(e) => visitApp(e, app.domain)}
-                      className="btn-primary cursor-pointer flex-shrink-0"
+                      className="btn-primary cursor-pointer flex-shrink-0 flex items-center gap-1"
                     >
                       Visit App
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                      </svg>
                     </button>
                   )}
                   
@@ -168,8 +198,13 @@ const PublicAppsList = ({ apps }) => {
                 </div>
               </div>
 
+              {/* Divider that shows only when expanded */}
+              {expandedApp === app.id && (
+                <div className="w-full border-t border-gray-100 my-6"></div>
+              )}
+
               {/* Actions section always available but only shown based on expandedApp state */}
-              <div className={`mt-6 pt-4 border-t border-gray-100 ${expandedApp !== app.id ? 'hidden md:block' : ''}`}>
+              <div className={`pt-4 ${expandedApp !== app.id ? 'hidden' : ''}`}>
                 <div className="grid grid-cols-1 gap-6">
                   {renderAppActions(app)}
                 </div>
@@ -192,14 +227,6 @@ const PublicAppsList = ({ apps }) => {
               {detailError && expandedApp === app.id && (
                 <div className="mt-6 p-4 rounded-lg bg-red-50 text-red-600">
                   {detailError}
-                </div>
-              )}
-
-              {expandedApp === app.id && !loading && !detailError && (
-                <div className="mt-6 pt-4 border-t border-gray-100 md:hidden">
-                  <div className="grid grid-cols-1 gap-6">
-                    {renderAppActions(app)}
-                  </div>
                 </div>
               )}
             </div>

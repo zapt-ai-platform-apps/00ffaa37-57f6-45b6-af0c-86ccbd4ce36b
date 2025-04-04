@@ -20,7 +20,7 @@ export default function PublicHeader() {
   
   return (
     <header className={`sticky top-0 z-50 transition-all duration-300 ${
-      scrolled ? 'bg-white shadow-md py-2' : 'bg-transparent py-4'
+      scrolled ? 'bg-white/95 backdrop-blur-md shadow-md py-3' : 'bg-transparent py-5'
     }`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
         <div className="flex items-center">
@@ -34,7 +34,7 @@ export default function PublicHeader() {
           } text-xl`}>ZAPT Traction Tracker</h1>
         </div>
         
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-5">
           <a 
             href="https://www.zapt.ai" 
             target="_blank" 
@@ -47,7 +47,9 @@ export default function PublicHeader() {
           </a>
           <Link 
             to="/login" 
-            className="btn-primary cursor-pointer transform transition-all hover:shadow-md active:shadow-sm active:translate-y-0.5"
+            className={`btn-primary cursor-pointer transform transition-all hover:shadow-md active:shadow-sm active:translate-y-0.5 ${
+              scrolled ? 'bg-indigo-600 text-white' : 'bg-white text-indigo-600 border border-indigo-200'
+            }`}
           >
             Login
           </Link>
