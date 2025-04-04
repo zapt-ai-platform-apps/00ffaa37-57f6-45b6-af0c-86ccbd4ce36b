@@ -22,14 +22,14 @@ const Hero = () => {
         <div className="md:flex md:items-center md:justify-between">
           <div className="md:w-1/2 mb-12 md:mb-0">
             <span className="inline-block px-3 py-1 text-sm font-medium bg-indigo-500 bg-opacity-30 rounded-full mb-6 border border-indigo-400 border-opacity-30">
-              Track • Measure • Grow
+              AI-Powered Growth Strategies
             </span>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold leading-tight">
-              <span className="block text-white">Track Your App's</span>
-              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300">Journey to Success</span>
+              <span className="block text-white">Get Actionable Growth</span>
+              <span className="block text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-pink-300">Strategies That Work</span>
             </h1>
             <p className="mt-6 text-xl text-indigo-100 max-w-lg leading-relaxed">
-              Monitor growth, track metrics, and share your app's progress with the world. Built with ZAPT to empower app creators.
+              Get personalized action plans to drive commercial traction, track metrics, and accelerate your app's growth. Built with ZAPT to empower app creators.
             </p>
             <div className="mt-10 flex flex-col sm:flex-row items-center gap-y-4 gap-x-6">
               <Link
@@ -76,6 +76,22 @@ const Hero = () => {
                   <div className="space-y-5">
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="flex justify-between items-center mb-2">
+                        <h4 className="text-sm font-medium text-gray-700">Suggested Actions</h4>
+                        <span className="text-sm text-blue-600 font-medium flex items-center">
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mr-1">
+                            <path fillRule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clipRule="evenodd" />
+                          </svg>
+                          New
+                        </span>
+                      </div>
+                      <div className="h-2 w-full bg-gray-200 rounded-full">
+                        <div className="h-2 bg-blue-500 rounded-full" style={{ width: '65%' }}></div>
+                      </div>
+                      <div className="mt-1 text-xs text-gray-500">3 growth actions to complete</div>
+                    </div>
+                    
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <div className="flex justify-between items-center mb-2">
                         <h4 className="text-sm font-medium text-gray-700">Active Users</h4>
                         <span className="text-sm text-green-600 font-medium flex items-center">
                           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4 mr-1">
@@ -104,20 +120,6 @@ const Hero = () => {
                         <div className="h-2 bg-purple-500 rounded-full" style={{ width: '65%' }}></div>
                       </div>
                       <div className="mt-1 text-xs text-gray-500">$12,450 this month</div>
-                    </div>
-                    
-                    <div className="bg-gray-50 p-4 rounded-lg">
-                      <div className="flex justify-between items-center mb-2">
-                        <h4 className="text-sm font-medium text-gray-700">Action Items</h4>
-                        <span className="text-sm text-amber-600 font-medium">8/10</span>
-                      </div>
-                      <div className="h-2 w-full bg-gray-200 rounded-full">
-                        <div className="h-2 bg-amber-500 rounded-full" style={{ width: '80%' }}></div>
-                      </div>
-                      <div className="mt-1 flex justify-between items-center text-xs text-gray-500">
-                        <span>2 remaining</span>
-                        <span className="text-indigo-600">View all</span>
-                      </div>
                     </div>
                   </div>
                 </div>

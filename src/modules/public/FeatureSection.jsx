@@ -3,6 +3,13 @@ import { IoBarChartSharp, IoBulbOutline, IoShareSocialOutline, IoRocketSharp } f
 
 const features = [
   {
+    name: 'AI-Powered Growth Strategies',
+    description: "Get personalized, actionable strategies and recommendations to increase traction and grow your app's user base.",
+    icon: IoBulbOutline,
+    color: 'from-amber-500 to-orange-600',
+    bgColor: 'bg-amber-50'
+  },
+  {
     name: 'Track Key Metrics',
     description: "Monitor user counts, revenue, and other critical KPIs to understand your app's performance at a glance.",
     icon: IoBarChartSharp,
@@ -10,11 +17,11 @@ const features = [
     bgColor: 'bg-blue-50'
   },
   {
-    name: 'Strategic Guidance',
-    description: 'Get actionable insights and strategic recommendations to help grow your app and increase traction.',
-    icon: IoBulbOutline,
-    color: 'from-amber-500 to-orange-600',
-    bgColor: 'bg-amber-50'
+    name: 'Action Planning',
+    description: 'Create and track action items systematically generated from proven growth strategies to achieve consistent traction.',
+    icon: IoRocketSharp,
+    color: 'from-purple-500 to-pink-600',
+    bgColor: 'bg-purple-50'
   },
   {
     name: 'Public Sharing',
@@ -22,13 +29,6 @@ const features = [
     icon: IoShareSocialOutline,
     color: 'from-emerald-500 to-green-600',
     bgColor: 'bg-emerald-50'
-  },
-  {
-    name: 'Action Planning',
-    description: 'Create and track action items to systematically grow your app and achieve milestones.',
-    icon: IoRocketSharp,
-    color: 'from-purple-500 to-pink-600',
-    bgColor: 'bg-purple-50'
   }
 ];
 
@@ -43,7 +43,7 @@ const FeatureSection = () => {
           Everything You Need to Grow Your App
         </h2>
         <p className="mt-4 text-xl text-gray-600 max-w-3xl mx-auto">
-          Track metrics, plan your next steps, and share your journey with the world
+          Get suggested growth actions, track metrics, and share your journey with the world
         </p>
       </div>
 
