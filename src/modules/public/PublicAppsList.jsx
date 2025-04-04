@@ -126,7 +126,7 @@ const PublicAppsList = ({ apps, isPublicDashboard = false }) => {
           Showcase
         </span>
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Apps Gallery</h2>
-        <p className="mt-3 text-xl text-gray-600">Discover and explore apps built with ZAPT</p>
+        <p className="mt-3 text-xl text-gray-600">Example apps to inspire your next project</p>
       </div>
       
       <div className="space-y-8">
