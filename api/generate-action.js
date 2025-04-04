@@ -61,6 +61,29 @@ export default async function handler(req, res) {
       
       Based on this information and any actions already completed or in progress, please suggest THREE DISTINCT specific next actions I should take EXCLUSIVELY to gain traction for my app. Traction means directly growing my app's user base or revenue.
       
+      Important traction strategy guidance to follow, ranked from most to least effective:
+      
+      1. Email people you already know (highest impact)
+         - Use your existing network: friends, classmates, ex-colleagues — anyone who could benefit
+         - Ensure they actually use the product and ideally pay if you're charging
+         - Early customers should feel the value directly
+      
+      2. Targeted cold outreach
+         - Do specific research to find the right people
+         - Send personal, direct messages (not mass emails)
+         - A good campaign typically converts 2-3% of contacts
+      
+      3. Social media and press
+         - Requires consistency to be effective
+         - One article or post won't carry you far
+         - Follow Airbnb's example: create your own headlines/content regularly
+      
+      4. Paid ads (least effective for early traction)
+         - No breakout startup got its first 100 users this way
+         - Consider only after other channels are working
+      
+      Remember: The first 100 users don't come from scale. They come from direct effort, focus, and doing things that don't scale.
+      
       Each action should be:
       - SOLELY focused on gaining traction (user acquisition, retention, or revenue)
       - Specific and actionable (something I can actually do)
