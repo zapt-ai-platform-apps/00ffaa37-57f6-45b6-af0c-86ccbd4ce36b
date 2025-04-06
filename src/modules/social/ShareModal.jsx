@@ -99,13 +99,22 @@ export default function ShareModal({ app, onClose }) {
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg w-full max-w-3xl max-h-[90vh] overflow-y-auto">
         <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Share Your App</h2>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Smart Social Sharing</h2>
             <button onClick={onClose} className="text-gray-500 hover:text-gray-700 cursor-pointer">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
+          </div>
+          
+          <div className="mb-6 p-4 bg-indigo-50 rounded-lg border border-indigo-100">
+            <h3 className="text-md font-medium text-indigo-800 mb-2">Targeted Referral Approach</h3>
+            <p className="text-sm text-indigo-700">
+              This tool helps you create personalized messages focused on direct, one-to-one recommendations. 
+              Instead of broadcasting to everyone, inspire your network to think of specific people who genuinely 
+              need your solution. This targeted approach typically generates higher-quality leads.
+            </p>
           </div>
           
           <div className="mb-6">

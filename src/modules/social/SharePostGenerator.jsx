@@ -86,14 +86,14 @@ export default function SharePostGenerator({ app, platform, content, onContentUp
         />
       )}
       
-      <div className="mt-2 text-sm text-gray-500">
-        <p>Tips for Targeted Referrals:</p>
+      <div className="mt-2 text-sm text-gray-600">
+        <p className="font-medium text-gray-700">Personal Referrals: More Powerful Than Mass Sharing</p>
         <ul className="list-disc pl-5 mt-1">
-          <li>Clearly state the problem your app solves</li>
-          <li>Identify who would benefit most from your app</li>
-          <li>Include a direct call to action asking readers to think of specific people</li>
-          <li>Make it personal and authentic</li>
-          <li>Mention any early success metrics to build credibility</li>
+          <li>Clearly explain the <span className="font-medium">specific problem</span> your app solves</li>
+          <li>Describe <span className="font-medium">exactly who</span> would benefit most</li>
+          <li>Ask readers to think of <span className="font-medium">specific people</span> they know who face this problem</li>
+          <li>Encourage <span className="font-medium">direct sharing</span> with those individuals (not just public posting)</li>
+          <li>Keep it authentic and conversational</li>
         </ul>
       </div>
     </div>
