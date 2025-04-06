@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 
-export default function ShareButton({ platform, content, app }) {
+export default function ShareButton({ platform, content, app, disabled }) {
   const [isSharing, setIsSharing] = useState(false);
   const [shareResult, setShareResult] = useState(null);
   
   const handleShare = async () => {
+    if (disabled || !content) return;
+    
     setIsSharing(true);
     setShareResult(null);
     
@@ -53,6 +55,8 @@ export default function ShareButton({ platform, content, app }) {
   };
   
   const copyToClipboard = async () => {
+    if (disabled || !content) return;
+    
     setIsSharing(true);
     try {
       await navigator.clipboard.writeText(content);
@@ -71,13 +75,20 @@ export default function ShareButton({ platform, content, app }) {
     }
   };
   
+  const platformLabel = {
+    'linkedin': 'LinkedIn',
+    'twitter': 'Twitter/X',
+    'facebook': 'Facebook',
+    'whatsapp': 'WhatsApp'
+  };
+  
   return (
     <div className="space-y-3">
       <div className="flex gap-3">
         <button
           onClick={handleShare}
-          disabled={isSharing}
-          className="btn-primary cursor-pointer flex items-center"
+          disabled={disabled || isSharing}
+          className={`btn-primary cursor-pointer flex items-center ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {isSharing ? (
             <>
@@ -86,15 +97,15 @@ export default function ShareButton({ platform, content, app }) {
             </>
           ) : (
             <>
-              Share to {platform === 'twitter' ? 'Twitter/X' : platform.charAt(0).toUpperCase() + platform.slice(1)}
+              Share to {platformLabel[platform] || platform.charAt(0).toUpperCase() + platform.slice(1)}
             </>
           )}
         </button>
         
         <button
           onClick={copyToClipboard}
-          disabled={isSharing}
-          className="btn-secondary cursor-pointer flex items-center"
+          disabled={disabled || isSharing}
+          className={`btn-secondary cursor-pointer flex items-center ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {isSharing ? (
             <>

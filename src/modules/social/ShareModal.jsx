@@ -6,22 +6,65 @@ import ShareButton from './ShareButton';
 export default function ShareModal({ app, onClose }) {
   const [selectedPlatform, setSelectedPlatform] = useState('linkedin');
   const [shareContent, setShareContent] = useState({});
+  const [isLoading, setIsLoading] = useState({
+    linkedin: false,
+    twitter: false,
+    facebook: false,
+    whatsapp: false
+  });
+  const [error, setError] = useState(null);
   
-  // Generate initial content when app data changes
+  // Generate initial content when app data changes or platform is selected
   useEffect(() => {
     if (app) {
-      // Generate content for different platforms
-      setShareContent({
-        linkedin: generateLinkedinContent(app),
-        twitter: generateTwitterContent(app),
-        facebook: generateFacebookContent(app),
-        whatsapp: generateWhatsappContent(app)
-      });
+      generateContentForPlatform(selectedPlatform);
     }
-  }, [app]);
+  }, [app, selectedPlatform]);
+  
+  const generateContentForPlatform = async (platform) => {
+    setIsLoading(prev => ({ ...prev, [platform]: true }));
+    setError(null);
+    
+    try {
+      const response = await fetch('/api/generate-social-content', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('supabase.auth.token')}`
+        },
+        body: JSON.stringify({ app, platform })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to generate content');
+      }
+      
+      const data = await response.json();
+      
+      setShareContent(prev => ({
+        ...prev,
+        [platform]: data.content
+      }));
+    } catch (err) {
+      console.error('Error generating content:', err);
+      // Fallback to template-based content
+      setShareContent(prev => ({
+        ...prev,
+        [platform]: generateFallbackContent(platform, app)
+      }));
+      setError('Could not generate AI content. Using template instead.');
+    } finally {
+      setIsLoading(prev => ({ ...prev, [platform]: false }));
+    }
+  };
   
   const handlePlatformChange = (platform) => {
     setSelectedPlatform(platform);
+    // If we don't have content for this platform yet, generate it
+    if (!shareContent[platform]) {
+      generateContentForPlatform(platform);
+    }
   };
   
   const handleContentUpdate = (platform, content) => {
@@ -29,6 +72,10 @@ export default function ShareModal({ app, onClose }) {
       ...prev,
       [platform]: content
     }));
+  };
+  
+  const handleRegenerateContent = () => {
+    generateContentForPlatform(selectedPlatform);
   };
   
   return (
@@ -50,35 +97,47 @@ export default function ShareModal({ app, onClose }) {
               <button
                 onClick={() => handlePlatformChange('linkedin')}
                 className={`px-4 py-2 rounded-md cursor-pointer ${selectedPlatform === 'linkedin' ? 'bg-blue-600 text-white' : 'bg-gray-100'}`}
+                disabled={isLoading[selectedPlatform]}
               >
                 LinkedIn
               </button>
               <button
                 onClick={() => handlePlatformChange('twitter')}
                 className={`px-4 py-2 rounded-md cursor-pointer ${selectedPlatform === 'twitter' ? 'bg-blue-400 text-white' : 'bg-gray-100'}`}
+                disabled={isLoading[selectedPlatform]}
               >
                 Twitter/X
               </button>
               <button
                 onClick={() => handlePlatformChange('facebook')}
                 className={`px-4 py-2 rounded-md cursor-pointer ${selectedPlatform === 'facebook' ? 'bg-blue-800 text-white' : 'bg-gray-100'}`}
+                disabled={isLoading[selectedPlatform]}
               >
                 Facebook
               </button>
               <button
                 onClick={() => handlePlatformChange('whatsapp')}
                 className={`px-4 py-2 rounded-md cursor-pointer ${selectedPlatform === 'whatsapp' ? 'bg-green-500 text-white' : 'bg-gray-100'}`}
+                disabled={isLoading[selectedPlatform]}
               >
                 WhatsApp
               </button>
             </div>
           </div>
           
+          {error && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-800 text-sm">
+              {error}
+            </div>
+          )}
+          
           <SharePostGenerator 
             app={app} 
             platform={selectedPlatform} 
             content={shareContent[selectedPlatform]} 
-            onContentUpdate={(content) => handleContentUpdate(selectedPlatform, content)} 
+            onContentUpdate={(content) => handleContentUpdate(selectedPlatform, content)}
+            isLoading={isLoading[selectedPlatform]}
+            onRegenerate={handleRegenerateContent}
           />
           
           <div className="mt-6">
@@ -86,6 +145,7 @@ export default function ShareModal({ app, onClose }) {
             <PlatformPreview 
               platform={selectedPlatform} 
               content={shareContent[selectedPlatform]}
+              isLoading={isLoading[selectedPlatform]}
             />
           </div>
           
@@ -94,6 +154,7 @@ export default function ShareModal({ app, onClose }) {
               platform={selectedPlatform} 
               content={shareContent[selectedPlatform]} 
               app={app} 
+              disabled={isLoading[selectedPlatform] || !shareContent[selectedPlatform]}
             />
           </div>
         </div>
@@ -102,7 +163,23 @@ export default function ShareModal({ app, onClose }) {
   );
 }
 
-// Helper functions to generate content
+// Fallback content generation if AI fails
+function generateFallbackContent(platform, app) {
+  switch (platform) {
+    case 'linkedin':
+      return generateLinkedinContent(app);
+    case 'twitter':
+      return generateTwitterContent(app);
+    case 'facebook':
+      return generateFacebookContent(app);
+    case 'whatsapp':
+      return generateWhatsappContent(app);
+    default:
+      return '';
+  }
+}
+
+// Helper functions to generate content as fallback
 function generateLinkedinContent(app) {
   return `I wanted to share this app I created: ${app.name}
 
