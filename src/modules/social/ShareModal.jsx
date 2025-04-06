@@ -2,8 +2,11 @@ import React, { useState, useEffect } from 'react';
 import SharePostGenerator from './SharePostGenerator';
 import PlatformPreview from './PlatformPreview';
 import ShareButton from './ShareButton';
+import useAuth from '@/modules/auth/hooks/useAuth';
+import * as Sentry from '@sentry/browser';
 
 export default function ShareModal({ app, onClose }) {
+  const { session } = useAuth();
   const [selectedPlatform, setSelectedPlatform] = useState('linkedin');
   const [shareContent, setShareContent] = useState({});
   const [isLoading, setIsLoading] = useState({
@@ -26,21 +29,27 @@ export default function ShareModal({ app, onClose }) {
     setError(null);
     
     try {
+      if (!session?.access_token) {
+        throw new Error('No authentication token available');
+      }
+      
+      console.log(`Generating social content for ${platform}...`);
       const response = await fetch('/api/generate-social-content', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('supabase.auth.token')}`
+          'Authorization': `Bearer ${session.access_token}`
         },
         body: JSON.stringify({ app, platform })
       });
       
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to generate content');
+        throw new Error(errorData.error || `Failed to generate content: ${response.status}`);
       }
       
       const data = await response.json();
+      console.log(`Content for ${platform} generated successfully`);
       
       setShareContent(prev => ({
         ...prev,
@@ -48,12 +57,20 @@ export default function ShareModal({ app, onClose }) {
       }));
     } catch (err) {
       console.error('Error generating content:', err);
+      Sentry.captureException(err, {
+        extra: {
+          platform,
+          appId: app?.id,
+          appName: app?.name
+        }
+      });
+      
       // Fallback to template-based content
       setShareContent(prev => ({
         ...prev,
         [platform]: generateFallbackContent(platform, app)
       }));
-      setError('Could not generate AI content. Using template instead.');
+      setError(`Could not generate AI content: ${err.message}. Using template instead.`);
     } finally {
       setIsLoading(prev => ({ ...prev, [platform]: false }));
     }
