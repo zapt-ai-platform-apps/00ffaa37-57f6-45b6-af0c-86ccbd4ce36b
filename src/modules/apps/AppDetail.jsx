@@ -7,6 +7,7 @@ import MetricsForm from '@/modules/metrics/MetricsForm';
 import MetricsCharts from '@/modules/metrics/MetricsCharts';
 import ActionsSection from '@/modules/actions/ActionsSection';
 import ActionContext from '@/modules/actions/ActionContext';
+import SocialSharing from '@/modules/social';
 import * as Sentry from '@sentry/browser';
 import useAuth from '@/modules/auth/hooks/useAuth';
 import { IoArrowBack } from 'react-icons/io5';
@@ -269,6 +270,7 @@ export default function AppDetail() {
             <p className="text-gray-600">{app.description}</p>
           </div>
           <div className="mt-4 sm:mt-0 flex flex-wrap gap-2">
+            <SocialSharing app={app} />
             <button 
               onClick={() => setShowEditForm(true)}
               className="btn-secondary cursor-pointer"
